@@ -1,7 +1,7 @@
 using LinearAlgebra
 using Plots
 
-f = x -> sin(3x) + sin(15x)
+f = x -> sin(3x) + sin(30x)
 
 function dftmatrix(n)
     z = range(0, 2π, length=n+1)[1:end-1]
@@ -13,17 +13,19 @@ function fftmatrix(n)
     P_σ = I(2n)[σ,:]
     Qₙ = dftmatrix(n)
     Dₙ = Diagonal([exp(im*k*π/n) for k=0:n-1])
-    (P_σ'*[Qₙ' Qₙ'; Qₙ'*Dₙ -Qₙ'*Dₙ])
+    Q₂ₙ_adj = (1 / sqrt(2)) * (P_σ'*[Qₙ' Qₙ'; Qₙ'*Dₙ -Qₙ'*Dₙ])
+    Q₂ₙ_adj'
+
 end
 
 n=31
 z = range(0, 2π, length=2n+1)[1:end-1]
 samples = f.(z)
 A = fftmatrix(n)
-f̂ = A*samples
+f̂ = (1 / sqrt(2n)) * A * samples
 
 # print(abs.(f̂))
-plot(0:length(f̂)-1, abs.(f̂))
+# plot(0:length(f̂)-1, abs.(f̂))
 
 function fourierconv(f, g, n)
     z = range(0, 2π, length=2n+1)[1:end-1]
@@ -40,7 +42,7 @@ function conv(f, g, n)
     return A \ ĉ
 end
 
-
+plot(0:length(f̂)-1, abs.(f̂))
 
 
 
