@@ -22,8 +22,8 @@ end
 function fourierconv(f, g, n)
     z = range(0, 2π, length=2n+1)[1:end-1]
     A = fftmatrix(n)
-    f̂ = A*(f.(z))
-    ĝ = A*(g.(z))
+    f̂ = (1 / sqrt(2n))*A*(f.(z))
+    ĝ = (1 / sqrt(2n))*A*(g.(z))
     ĉ = [f̂[k]*ĝ[k] for k in 1:2n]
     return ĉ
 end
