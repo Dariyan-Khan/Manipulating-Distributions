@@ -23,8 +23,9 @@ A = fftmatrix(n)
 f̂ = A*samples
 
 # print(abs.(f̂))
-
 plot(0:length(f̂)-1, abs.(f̂))
+
+
 
 
 
