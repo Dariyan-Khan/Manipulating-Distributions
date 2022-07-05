@@ -1,12 +1,12 @@
 using LinearAlgebra
 using Plots
 
-f = x -> sin(3x) + sin(30x)
 
 function dftmatrix(n)
     z = range(0, 2π, length=n+1)[1:end-1]
     [exp(-im*(k-1)*z[j]) for k=1:n, j=1:n]/sqrt(n)
 end
+
 
 function fftmatrix(n)
     σ = [1:2:2n-1;2:2:2n]
@@ -18,14 +18,6 @@ function fftmatrix(n)
 
 end
 
-n=31
-z = range(0, 2π, length=2n+1)[1:end-1]
-samples = f.(z)
-A = fftmatrix(n)
-f̂ = (1 / sqrt(2n)) * A * samples
-
-# print(abs.(f̂))
-# plot(0:length(f̂)-1, abs.(f̂))
 
 function fourierconv(f, g, n)
     z = range(0, 2π, length=2n+1)[1:end-1]
@@ -36,13 +28,13 @@ function fourierconv(f, g, n)
     return ĉ
 end
 
+
 function conv(f, g, n)
     A = fftmatrix(n)
     ĉ = fourierconv(f, g, n)
     return A \ ĉ
 end
 
-plot(0:length(f̂)-1, abs.(f̂))
 
 
 
