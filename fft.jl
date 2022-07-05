@@ -31,9 +31,9 @@ end
 
 function conv(f, g, n)
     A = fftmatrix(n)
-    B = conj.(A)
+    # B = conj.(A)
     ĉ = fourierconv(f, g, n)
-    return sqrt(2n)*B'*ĉ
+    return sqrt(2n)*A'*ĉ
 end
 
 
