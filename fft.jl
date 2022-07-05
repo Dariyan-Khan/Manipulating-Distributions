@@ -23,7 +23,6 @@ A = fftmatrix(n)
 f̂ = A*samples
 
 # print(abs.(f̂))
-
 plot(0:length(f̂)-1, abs.(f̂))
 
 function fourierconv(f, g, n)
@@ -40,6 +39,8 @@ function conv(f, g, n)
     c = fourierconv(f, g, n)
     return A \ c
 end
+
+
 
 
 
