@@ -26,7 +26,20 @@ f̂ = A*samples
 
 plot(0:length(f̂)-1, abs.(f̂))
 
+function fourierconv(f, g, n)
+    z = range(0, 2π, length=2n+1)[1:end-1]
+    A = fftmatrix(n)
+    ffourier = A*(f.(z))
+    gfourier = A*(g.(z))
+    cfourier = [ffourier[k]*gfourier[k] for k in 1:2n]
+    return cfourier
+end
 
+function conv(f, g, n)
+    A = fftmatrix(n)
+    c = fourierconv(f, g, n)
+    return A \ c
+end
 
 
 
