@@ -1,6 +1,7 @@
 using LinearAlgebra
+using Plots
 
-f = x -> sin(x) + sin(3*x)
+f = x -> sin(3x) + sin(15x)
 
 function dftmatrix(n)
     z = range(0, 2π, length=n+1)[1:end-1]
@@ -15,10 +16,17 @@ function fftmatrix(n)
     (P_σ'*[Qₙ' Qₙ'; Qₙ'*Dₙ -Qₙ'*Dₙ])
 end
 
-z = range(0, 2π, length=n+1)[1:end-1]
-f.(z)
-
+n=31
+z = range(0, 2π, length=2n+1)[1:end-1]
+samples = f.(z)
 A = fftmatrix(n)
+f̂ = A*samples
+
+# print(abs.(f̂))
+
+plot(0:length(f̂)-1, abs.(f̂))
+
+
 
 
 
