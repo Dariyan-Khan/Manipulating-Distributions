@@ -4,7 +4,7 @@ using Plots
 
 function dftmatrix(n)
     z = range(0, 2π, length=n+1)[1:end-1]
-    [exp(-im*(k-1)*z[j]) for k=1:n, j=1:n]/sqrt(n)
+    [exp(-im*(k-1)*z[j]) for k=1:n, j=1:n] *(1 / sqrt(n))
 end
 
 
@@ -13,9 +13,9 @@ function fftmatrix(n)
     P_σ = I(2n)[σ,:]
     Qₙ = dftmatrix(n)
     Dₙ = Diagonal([exp(im*k*π/n) for k=0:n-1])
-    Q₂ₙ_adj = (1 / sqrt(2)) * (P_σ'*[Qₙ' Qₙ'; Qₙ'*Dₙ -Qₙ'*Dₙ])
-    Q₂ₙ_adj'
+    Q₂ₙ_adj = P_σ'*[Qₙ' Qₙ'; Qₙ'*Dₙ -Qₙ'*Dₙ] * 1/sqrt(2)
 
+    return Q₂ₙ_adj'
 end
 
 
@@ -33,9 +33,8 @@ function conv(f, g, n)
     A = fftmatrix(n)
     # B = conj.(A)
     ĉ = fourierconv(f, g, n)
-    return sqrt(2n)*A'*ĉ
+    return 2π*(sqrt(2n))*A'*ĉ
 end
-
 
 
 
