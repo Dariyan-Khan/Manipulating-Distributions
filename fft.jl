@@ -29,7 +29,7 @@ function fourierconv(f, g, n; lower=0, upper=2π)
 end
 
 
-function oldconv(f, g, n; lower=0, upper=2π)
+function conv(f, g, n; lower=0, upper=2π)
     A = fftmatrix(n)
     # B = conj.(A)
     ĉ = fourierconv(f, g, n, lower=lower, upper=upper)
