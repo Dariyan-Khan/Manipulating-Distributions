@@ -7,10 +7,17 @@ function legendreft(m)
 end
 
 # compute legendre series of a poly
-function legendreseries(f)
+function legendrecoeff(f)
     T = Legendre()
     x = axes(T, 1)
     c = T \ f.(x)
     return c
 end
+
+function legendreseries(f)
+    c = legendrecoeff(f)
+    g = T * c
+    return g
+end
+
 # compute fourier transform of poly using leg series
