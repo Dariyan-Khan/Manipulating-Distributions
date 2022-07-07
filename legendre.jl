@@ -113,16 +113,16 @@ function bright(k::Int, n::Int, f::Poly, g::Poly)
             if k == 0
                 return α[1] + α[2]/3
             else
-                return α[k-1]/(2k-1)  α[k+1]/(2k+3)
+                return α[k-1]/(2k-1) + α[k+1]/(2k+3)
             end
         if n == 1
             if k == 0
-                return 
+                return -bright(1, 0, f, g)/3
             else
-                return 
+                return bright(k-1, 0, f, g)/(2k-1) + bright(k,0,f,g) - bright(k+1,0,f,g)/(2k+3)
             end
         else
-            return 
+            return -(2n-1)/(2k+3) * bright(k+1,n-1,f,g) + (2n-1)/(2k-1) * bright(k-1,n-1,f,g) + bright(k, n-2,f,g)
         end
     else
         return bright(n,k,f,g) * (-1)^(n+k) * (2k+1)/(2n+1)
@@ -145,5 +145,17 @@ end
 
 # find γₖ right
 function gammaright(k::Int, f::Poly, g::Poly)
+    N = degree(f)
+    β = legendrecoeff(g)
+    ret = 0 
+    for i in 0:N
+        ret += β[i+1] * bright(k, i, f, g)
+    end
+    return ret
+end
 
+
+function legendreconv(f::Poly, g::Poly)
+    
+    hleft = x -> 
 end
