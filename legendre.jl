@@ -33,10 +33,32 @@ degree!(pol::Poly) = degree(pol.p)
 l_coeffs(pol::Poly) = legendrecoeff(pol.p)
 l_series(pol::Poly) =  legendreseries(pol.p)
 
+function shift(f::Poly, c::Real)
+    #given f(x) finds the polynomial f(x+c)
+    N = degree(f) + 1
+    xs = range(start=f.domain[1], stop=f.domain[2], length=N)
+    ys = (f.p).(xs)
+    xs = xs .- c
+    return fit(xs, ys)
+end
 
-a = Poly([1, 2], Polynomial([1, 2]))
 
-l_coeffs(a)
+
+
+function poly_conv(f::Poly, g::Poly, x::Real, d₁::Vector, d₂::Vector)
+    @assert length(d₁) == 2 && d₁[1] <= d₁[2]
+    @assert length(d₂) == 2 && d₂[1] <= d₂[2]
+    @assert x >= d₁[1] + d₂[2] && x <= d₁[2] + d₂[2]
+    a = max(d₁[1],x-d₂[2])
+    b = min(d₁[2], x-d₂[1])
+    
+    return 
+end
+
+function conv(f::Poly, g::Poly)
+    
+end
+
 
 
 function bleft(k, n, f, g)
@@ -68,3 +90,4 @@ function gammaleft(k, f, g)
     # find degree of f 
     # take sum and use bleft 
 end
+
