@@ -1,6 +1,5 @@
 using ClassicalOrthogonalPolynomials, Plots, SpecialFunctions, Polynomials, 
-      Parameters
-using Debugger
+      Parameter
 
 # compute fourier transform of m degree Legendre poly
 function legendreft(m) 
@@ -48,11 +47,11 @@ function xshift(f::Poly, c::Real)
     N = degree!(f) + 1
     xs = range(start=f.domain[1], stop=f.domain[2], length=N)
     ys = (f.p).(xs)
-    xs = xs .+ c
+    xs = xs .- c
     return Poly(f.domain .- c, fit(xs, ys))
 end
 
-function yreflect(f::Poly)
+function xreflect(f::Poly)
     #given f(x) finds the polynomial f(x+c)
     N = degree!(f) + 1
     xs = range(start=f.domain[1], stop=f.domain[2], length=N)
@@ -72,7 +71,7 @@ function poly_conv_inner(f::Poly, g::Poly, c::Real, d₁::Vector, d₂::Vector)
     a = max(d₁[1],c-d₂[2])
     b = min(d₁[2], c-d₂[1])
     @assert a <= b
-    g = xshift(yreflect(g), c)
+    g = xreflect(xshift(g, c))
     return integrate(f.p*g.p, a, b)
 end
 
@@ -184,15 +183,21 @@ function gammaright(k::Int, f::Poly, g::Poly)
 end
 
 
+function legendreconv_1_minus_1(f::Poly, g::Poly)
+    T = Legendre()
+    lam_left = k -> gammaleft(k, f, g)
+    γ_left = lam_left.(0:degree!(f) + degree!(g) + 1)
+    #Calculate h but then we need to map x -> x+1
+    pre_h_left = T * γ_left
+    h_left = x ->  pre_h_left(x+1)
+    h_left = T / T \ h_left
 
+    lam_right = k -> gammaright(k, f, g)
+    γ_right = lam_right.(0:degree!(f) + degree!(g) + 1)
+    #Calculate h but then we need to map x -> x+1
+    pre_h_right = T * γ_right
+    h_right = x ->  pre_h_right(x-1)
+    h_right = T / T \ h_right
 
-# function legendreconv(f::Poly, g::Poly)
-    
-#     hleft = x -> 
-# end
+end
 
-
-f = Poly([0,2], Polynomial([2,1]))
-g = Poly([0,2], Polynomial([2,1]))
-#poly_conv(f::Poly, g::Poly, c::Real, d₁::Vector, d₂::Vector)
-piecewise_conv(f, g)
