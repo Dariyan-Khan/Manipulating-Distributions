@@ -48,7 +48,7 @@ function shift(f::Poly, c::Real)
     xs = range(start=f.domain[1], stop=f.domain[2], length=N)
     ys = (f.p).(xs)
     xs = xs .- c
-    return Poly(f.domain -c, fit(xs, ys))
+    return fit(xs, ys)
 end
 
 function reflect(f::Poly, c::Real)
@@ -62,15 +62,14 @@ end
 
 
 
-
-function poly_conv(f::Poly, g::Poly, c::Real, d₁::Vector, d₂::Vector)
+function poly_conv(f::Poly, g::Poly, x::Real, d₁::Vector, d₂::Vector)
     @assert length(d₁) == 2 && d₁[1] <= d₁[2]
     @assert length(d₂) == 2 && d₂[1] <= d₂[2]
     @assert x >= d₁[1] + d₂[2] && x <= d₁[2] + d₂[2]
     a = max(d₁[1],x-d₂[2])
     b = min(d₁[2], x-d₂[1])
-    g = shift(relfect(g), c)
-    return integrate(f.p*g.p, a, b)
+    
+    return 
 end
 
 function conv(f::Poly, g::Poly)
@@ -107,7 +106,27 @@ end
 
 # find k,n-th entry of B right
 function bright(k::Int, n::Int, f::Poly, g::Poly)
-
+    α = legendrecoeff(f)
+    β = legendrecoeff(g)
+    if k > n
+        if n == 0
+            if k == 0
+                return α[1] + α[2]/3
+            else
+                return α[k-1]/(2k-1)  α[k+1]/(2k+3)
+            end
+        if n == 1
+            if k == 0
+                return 
+            else
+                return 
+            end
+        else
+            return 
+        end
+    else
+        return bright(n,k,f,g) * (-1)^(n+k) * (2k+1)/(2n+1)
+    end
 end
 
 # find γₖ left  
@@ -121,6 +140,7 @@ function gammaleft(k::Int, f::Poly, g::Poly)
         ret += β[i+1] * bleft(k, i, f, g)
     end
     return ret
+end
 end
 
 # find γₖ right
