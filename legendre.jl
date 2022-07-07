@@ -30,10 +30,13 @@ struct Poly
     p::Polynomial
 end
 degree!(pol::Poly) = degree(pol.p)
+l_coeffs(pol::Poly) = legendrecoeff(pol.p)
+l_series(pol::Poly) =  legendreseries(pol.p)
 
 
 a = Poly([1, 2], Polynomial([1, 2]))
 
+l_coeffs(a)
 
 
 function bleft(k, n, f, g)
