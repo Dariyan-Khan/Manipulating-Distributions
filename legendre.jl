@@ -77,9 +77,10 @@ function conv(f::Poly, g::Poly)
     
 end
 
+# FOR LEGENDRE SERIES ON [1,1], then extend to on [a,b] [c,d] where d-c=b-a 
 
-
-function bleft(k, n, f, g)
+# find k,n-th entry of B left
+function bleft(k::Int, n::Int, f::Poly, g::Poly)
     α = legendrecoeff(f)
     β = legendrecoeff(g)
     if k > n
@@ -104,8 +105,25 @@ function bleft(k, n, f, g)
 end
 end
 
-function gammaleft(k, f, g)
-    # find degree of f 
-    # take sum and use bleft 
+# find k,n-th entry of B right
+function bright(k::Int, n::Int, f::Poly, g::Poly)
+
 end
 
+# find γₖ left  
+function gammaleft(k::Int, f::Poly, g::Poly)
+    # find degree of f 
+    # take sum and use bleft 
+    N = degree(f)
+    β = legendrecoeff(g)
+    ret = 0 
+    for i in 0:N
+        ret += β[i+1] * bleft(k, i, f, g)
+    end
+    return ret
+end
+
+# find γₖ right
+function gammaright(k::Int, f::Poly, g::Poly)
+
+end
