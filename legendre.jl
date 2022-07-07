@@ -1,4 +1,5 @@
-using ClassicalOrthogonalPolynomials, Plots, SpecialFunctions
+using ClassicalOrthogonalPolynomials, Plots, SpecialFunctions, Polynomials, 
+      Parameters
 
 # compute fourier transform of m degree Legendre poly
 function legendreft(m) 
@@ -15,9 +16,39 @@ function legendrecoeff(f)
 end
 
 function legendreseries(f)
+    T = Legendre()
     c = legendrecoeff(f)
     g = T * c
     return g
 end
 
 # compute fourier transform of poly using leg series
+#legendreseries(x -> x^2)
+
+struct Poly
+    domain::Vector
+    p::Polynomial
+end
+degree!(pol::Poly) = degree(pol.p)
+
+
+
+
+a = Poly([1, 2], Polynomial([1, 2]))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
