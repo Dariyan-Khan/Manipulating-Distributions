@@ -1,5 +1,6 @@
 using ClassicalOrthogonalPolynomials, Plots, SpecialFunctions, Polynomials, 
       Parameters
+using Debugger
 
 # compute fourier transform of m degree Legendre poly
 function legendreft(m) 
@@ -47,7 +48,7 @@ function xshift(f::Poly, c::Real)
     N = degree(f) + 1
     xs = range(start=f.domain[1], stop=f.domain[2], length=N)
     ys = (f.p).(xs)
-    xs = xs .- c
+    xs = xs .+ c
     return Poly(f.domain .- c, fit(xs, ys))
 end
 
@@ -61,19 +62,35 @@ function yreflect(f::Poly)
 end
 
 
+function poly_conv(f::Poly, g::Poly, c::Real)
+    poly_conv_inner(f, g, c, f.domain, g.domain)
+end
 
-function poly_conv(f::Poly, g::Poly, c::Real, d₁::Vector, d₂::Vector)
-    @assert x >= d₁[1] + d₂[2] && x <= d₁[2] + d₂[2]
-    a = max(d₁[1],x-d₂[2])
-    b = min(d₁[2], x-d₂[1])
+
+function poly_conv_inner(f::Poly, g::Poly, c::Real, d₁::Vector, d₂::Vector)
+    @assert (c >= d₁[1] + d₂[1]) && (c <= d₁[2] + d₂[2])
+    a = max(d₁[1],c-d₂[2])
+    b = min(d₁[2], c-d₂[1])
     @assert a <= b
+    print(a)
+    print(b)
     g = xshift(yreflect(g), c)
-    print("hi")
+    print(g)
     return integrate(f.p*g.p, a, b)
 end
 
-function conv(f::Poly, g::Poly)
-    
+function piecewise_conv(f::Poly, g::Poly)
+   polys = [0, 0, 0]
+   a, b, c, d = f.domain[1], f.domain[2], g.domain[1], g.domain[2]
+   domains = [[a+c, b+c], [b+c, a+d], [a+d, b+d]]
+   for i in 1:3
+    deg = degree(f) + degree(g) + mod(i,2)
+    dom = domains[i]
+    xs = range(start=dom[1], stop=dom[2], length=deg+1)
+    ys = poly_conv.(f, g, xs)
+    polys[i] = Poly(dom, fit(xs, ys))
+   end
+   return polys
 end
 
 # FOR LEGENDRE SERIES ON [1,1], then extend to on [a,b] [c,d] where d-c=b-a 
@@ -104,6 +121,7 @@ function bleft(k::Int, n::Int, f::Poly, g::Poly)
 end
 end
 
+
 # find k,n-th entry of B right
 function bright(k::Int, n::Int, f::Poly, g::Poly)
     α = legendrecoeff(f)
@@ -128,6 +146,7 @@ function bright(k::Int, n::Int, f::Poly, g::Poly)
         return bright(n,k,f,g) * (-1)^(n+k) * (2k+1)/(2n+1)
     end
 end
+end
 
 # find γₖ left  
 function gammaleft(k::Int, f::Poly, g::Poly)
@@ -141,7 +160,7 @@ function gammaleft(k::Int, f::Poly, g::Poly)
     end
     return ret
 end
-end
+
 
 # find γₖ right
 function gammaright(k::Int, f::Poly, g::Poly)
@@ -154,18 +173,16 @@ function gammaright(k::Int, f::Poly, g::Poly)
     return ret
 end
 
-<<<<<<< HEAD
-end
+
+
+
+# function legendreconv(f::Poly, g::Poly)
+    
+#     hleft = x -> 
+# end
 
 
 f = Poly([0,2], Polynomial([2,1]))
 g = Poly([0,2], Polynomial([2,1]))
 #poly_conv(f::Poly, g::Poly, c::Real, d₁::Vector, d₂::Vector)
-poly_conv(f, g, 1, [2,1], [2,1])
-=======
-
-function legendreconv(f::Poly, g::Poly)
-    
-    hleft = x -> 
-end
->>>>>>> b729c24663f64bcee22ba2f53198a6303fd75f01
+piecewise_conv(f, g)
