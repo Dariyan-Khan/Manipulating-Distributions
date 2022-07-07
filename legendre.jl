@@ -33,26 +33,44 @@ degree!(pol::Poly) = degree(pol.p)
 l_coeffs(pol::Poly) = legendrecoeff(pol.p)
 l_series(pol::Poly) =  legendreseries(pol.p)
 
+function eval!(pol::Poly, x::Real)
+    if x>=pol.domain[1] && x<=pol.domain[2]
+        return pol.p(x)
+    else 
+        println("Outside domain")
+        return 0
+    end
+end 
+
 function shift(f::Poly, c::Real)
     #given f(x) finds the polynomial f(x+c)
     N = degree(f) + 1
     xs = range(start=f.domain[1], stop=f.domain[2], length=N)
     ys = (f.p).(xs)
     xs = xs .- c
-    return fit(xs, ys)
+    return Poly(f.domain -c, fit(xs, ys))
+end
+
+function reflect(f::Poly, c::Real)
+    #given f(x) finds the polynomial f(x+c)
+    N = degree(f) + 1
+    xs = range(start=f.domain[1], stop=f.domain[2], length=N)
+    ys = (f.p).(xs)
+    xs = xs * -1
+    return Poly(f.domain * -1, fit(xs, ys))
 end
 
 
 
 
-function poly_conv(f::Poly, g::Poly, x::Real, d₁::Vector, d₂::Vector)
+function poly_conv(f::Poly, g::Poly, c::Real, d₁::Vector, d₂::Vector)
     @assert length(d₁) == 2 && d₁[1] <= d₁[2]
     @assert length(d₂) == 2 && d₂[1] <= d₂[2]
     @assert x >= d₁[1] + d₂[2] && x <= d₁[2] + d₂[2]
     a = max(d₁[1],x-d₂[2])
     b = min(d₁[2], x-d₂[1])
-    
-    return 
+    g = shift(relfect(g), c)
+    return integrate(f.p*g.p, a, b)
 end
 
 function conv(f::Poly, g::Poly)
