@@ -45,7 +45,7 @@ end
 
 function xshift(f::Poly, c::Real)
     #given f(x) finds the polynomial f(x+c)
-    N = degree(f) + 1
+    N = degree!(f) + 1
     xs = range(start=f.domain[1], stop=f.domain[2], length=N)
     ys = (f.p).(xs)
     xs = xs .+ c
@@ -54,7 +54,7 @@ end
 
 function yreflect(f::Poly)
     #given f(x) finds the polynomial f(x+c)
-    N = degree(f) + 1
+    N = degree!(f) + 1
     xs = range(start=f.domain[1], stop=f.domain[2], length=N)
     ys = (f.p).(xs)
     xs = xs * -1
@@ -72,25 +72,35 @@ function poly_conv_inner(f::Poly, g::Poly, c::Real, d₁::Vector, d₂::Vector)
     a = max(d₁[1],c-d₂[2])
     b = min(d₁[2], c-d₂[1])
     @assert a <= b
-    print(a)
-    print(b)
     g = xshift(yreflect(g), c)
-    print(g)
     return integrate(f.p*g.p, a, b)
 end
 
 function piecewise_conv(f::Poly, g::Poly)
-   polys = [0, 0, 0]
+   skip = false
+   arr = Poly.([[0, 1]]*3, zeros(3))
+   #pol = [Poly([0,0], 0), Poly([0,0], 0), Poly([0,0], 0)]
    a, b, c, d = f.domain[1], f.domain[2], g.domain[1], g.domain[2]
    domains = [[a+c, b+c], [b+c, a+d], [a+d, b+d]]
    for i in 1:3
-    deg = degree(f) + degree(g) + mod(i,2)
     dom = domains[i]
-    xs = range(start=dom[1], stop=dom[2], length=deg+1)
-    ys = poly_conv.(f, g, xs)
-    polys[i] = Poly(dom, fit(xs, ys))
+    if dom[1] != dom[2]
+        deg = degree!(f) + degree!(g) + mod(i,2)
+        xs = range(start=dom[1], stop=dom[2], length=deg+1)
+        lam = x -> poly_conv(f, g, x)
+        ys = lam.(xs)
+        println(fit(xs, ys))
+        arr[i] = Poly(dom, fit(xs, ys))
+        # append!(arr, Poly(dom, fit(xs, ys)))
+    else
+        skip = true
+    end
+    #pol[i] = Poly(dom, fit(xs, ys))
    end
-   return polys
+   if skip
+    arr = [arr[1], arr[3]]
+   end
+   return arr
 end
 
 # FOR LEGENDRE SERIES ON [1,1], then extend to on [a,b] [c,d] where d-c=b-a 
