@@ -42,16 +42,16 @@ function eval!(pol::Poly, x::Real)
     end
 end 
 
-function shift(f::Poly, c::Real)
+function xshift(f::Poly, c::Real)
     #given f(x) finds the polynomial f(x+c)
     N = degree(f) + 1
     xs = range(start=f.domain[1], stop=f.domain[2], length=N)
     ys = (f.p).(xs)
     xs = xs .- c
-    return fit(xs, ys)
+    return Poly(f.domain .- c, fit(xs, ys))
 end
 
-function reflect(f::Poly, c::Real)
+function yreflect(f::Poly)
     #given f(x) finds the polynomial f(x+c)
     N = degree(f) + 1
     xs = range(start=f.domain[1], stop=f.domain[2], length=N)
@@ -62,14 +62,14 @@ end
 
 
 
-function poly_conv(f::Poly, g::Poly, x::Real, d₁::Vector, d₂::Vector)
-    @assert length(d₁) == 2 && d₁[1] <= d₁[2]
-    @assert length(d₂) == 2 && d₂[1] <= d₂[2]
+function poly_conv(f::Poly, g::Poly, c::Real, d₁::Vector, d₂::Vector)
     @assert x >= d₁[1] + d₂[2] && x <= d₁[2] + d₂[2]
     a = max(d₁[1],x-d₂[2])
     b = min(d₁[2], x-d₂[1])
-    
-    return 
+    @assert a <= b
+    g = xshift(yreflect(g), c)
+    print("hi")
+    return integrate(f.p*g.p, a, b)
 end
 
 function conv(f::Poly, g::Poly)
@@ -147,3 +147,9 @@ end
 function gammaright(k::Int, f::Poly, g::Poly)
 
 end
+
+
+f = Poly([0,2], Polynomial([2,1]))
+g = Poly([0,2], Polynomial([2,1]))
+#poly_conv(f::Poly, g::Poly, c::Real, d₁::Vector, d₂::Vector)
+poly_conv(f, g, 1, [2,1], [2,1])
