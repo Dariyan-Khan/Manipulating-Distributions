@@ -161,7 +161,7 @@ end
 function gammaleft(k::Int, f::Poly, g::Poly)
     # find degree of f 
     # take sum and use bleft 
-    N = degree(f)
+    N = degree!(f)
     β = legendrecoeff(g)
     ret = 0 
     for i in 0:N
@@ -173,7 +173,7 @@ end
 
 # find γₖ right
 function gammaright(k::Int, f::Poly, g::Poly)
-    N = degree(f)
+    N = degree!(f)
     β = legendrecoeff(g)
     ret = 0 
     for i in 0:N
