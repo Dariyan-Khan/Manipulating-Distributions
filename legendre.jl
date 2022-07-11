@@ -1,5 +1,5 @@
-using ClassicalOrthogonalPolynomials, Plots, SpecialFunctions, Polynomials, 
-      Parameter
+using ClassicalOrthogonalPolynomials, Plots, SpecialFunctions, Polynomials,
+InfiniteArrays
 
 # compute fourier transform of m degree Legendre poly
 function legendreft(m) 
@@ -41,6 +41,14 @@ function eval!(pol::Poly, x::Real)
         return 0
     end
 end 
+
+
+function poly_interpolate(f, deg::Int; domain=[-1,1])
+    xs = range(start=f.domain[1], stop=f.domain[2], length=deg+1)
+    ys = f.(xs)
+    return Poly(domain, fit(xs, ys))
+end
+
 
 function xshift(f::Poly, c::Real)
     #given f(x) finds the polynomial f(x+c)
@@ -105,9 +113,34 @@ end
 # FOR LEGENDRE SERIES ON [1,1], then extend to on [a,b] [c,d] where d-c=b-a 
 
 # find k,n-th entry of B left
+# function bleft(k::Int, n::Int, f::Poly, g::Poly)
+#     α = legendrecoeff(f)
+#     β = legendrecoeff(g)
+#     if k > n
+#         if n == 0
+#             if k == 0
+#                 return α[1] - α[2]/3
+#             else
+#                 return α[k-1]/(2k-1) - α[k+1]/(2k+3)
+#             end
+#         if n == 1
+#             if k == 0
+#                 return -bleft(1, 0, f, g)/3
+#             else
+#                 return bleft(k-1, 0, f, g)/(2k-1) - bleft(k,0,f,g) - bleft(k+1,0,f,g)/(2k+3)
+#             end
+#         else
+#             return -(2n-1)/(2k+3) * bleft(k+1,n-1,f,g) + (2n-1)/(2k-1) * bleft(k-1,n-1,f,g) + bleft(k, n-2,f,g)
+#         end
+#     else
+#         return bleft(n,k,f,g) * (-1)^(n+k) * (2k+1)/(2n+1)
+#     end
+# end
+# end
+
 function bleft(k::Int, n::Int, f::Poly, g::Poly)
-    α = legendrecoeff(f)
-    β = legendrecoeff(g)
+    α = l_coeffs(f)
+    β = l_coeffs(g)
     if k > n
         if n == 0
             if k == 0
@@ -158,11 +191,23 @@ end
 end
 
 # find γₖ left  
+# function gammaleft(k::Int, f, g)
+#     # find degree of f 
+#     # take sum and use bleft 
+#     N = degree!(f)
+#     β = legendrecoeff(g)
+#     ret = 0 
+#     for i in 0:N
+#         ret += β[i+1] * bleft(k, i, f, g)
+#     end
+#     return ret
+# end
+
 function gammaleft(k::Int, f::Poly, g::Poly)
     # find degree of f 
     # take sum and use bleft 
     N = degree!(f)
-    β = legendrecoeff(g)
+    β = l_coeffs(g)
     ret = 0 
     for i in 0:N
         ret += β[i+1] * bleft(k, i, f, g)
@@ -200,4 +245,41 @@ function legendreconv_1_minus_1(f::Poly, g::Poly)
     h_right = T / T \ h_right
 
 end
+
+function trunc_legrendre_series(f; trunc=100)
+    T = Legendre()
+    x = axes(T, 1)
+    c = T \ f.(x)
+    c = c[:100]
+    return T * c
+
+    
+
+
+
+
+function legendre_same_length(f, g)
+    f = 
+    @assert f.domain[2] - f.domain[1] == g.domain[2] - g.domain[1]
+    #Inverse of each of the phi functions in the paper
+    ϕ_f_inv = x -> (((f.domain[2] - f.domain[1]) / 2) * (x + 1)) + f.domain[1]
+    ϕ_g_inv = x -> (((g.domain[2] - g.domain[1]) / 2) * (x + 1)) + g.domain[1]
+    fᵣ = x -> f(ϕ_f_inv(x))
+    gᵣ = x -> g(ϕ_g_inv(x))
+    fᵣ = poly_interpolate(fᵣ, degree!(f))
+    gᵣ = poly_interpolate(g, degree!(g))
+
+    
+
+
+    
+
+
+
+
+end
+
+# p = Poly([-1, 1], Polynomial([1,1]))
+# gammaleft(2, p, p)
+# a = legendreconv_1_minus_1(p, p)
 
