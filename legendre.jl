@@ -140,13 +140,13 @@ end
 # end
 # end
 
-function bleft(k::Int, n::Int, f, g)
+function bleft(k::Int, n::Int, f, g; N=100)
     if typeof(f)==Poly && typeof(g) == Poly
         α = l_coeffs(f)
         β = l_coeffs(g)
     else
-        α = legendrecoeff(f)
-        β = legendrecoeff(g)
+        α = legendrecoeff(f)[:N]
+        β = legendrecoeff(g)[:N]
     end
 
     if k > n
@@ -173,13 +173,13 @@ end
 
 
 # find k,n-th entry of B right
-function bright(k::Int, n::Int, f::Poly, g::Poly)
+function bright(k::Int, n::Int, f::Poly, g::Poly; N=100)
     if typeof(f)==Poly && typeof(g) == Poly
         α = l_coeffs(f)
         β = l_coeffs(g)
     else
-        α = legendrecoeff(f)
-        β = legendrecoeff(g)
+        α = legendrecoeff(f)[:N]
+        β = legendrecoeff(g)[:N]
     end
 
     if k > n
@@ -230,14 +230,14 @@ function gammaleft(k::Int, f, g; deg=-1)
     end
     ret = 0 
     for i in 0:N
-        ret += β[i+1] * bleft(k, i, f, g)
+        ret += β[i+1] * bleft(k, i, f, g,N=N)
     end
     return ret
 end
 
 
 # find γₖ right
-function gammaright(k::Int, f, g)
+function gammaright(k::Int, f, g; deg=-1)
     if typeof(f)==poly && typeof(g) == Poly
         N = degree!(f)
         β = l_coeffs(g)
@@ -248,7 +248,7 @@ function gammaright(k::Int, f, g)
     end
     ret = 0 
     for i in 0:N
-        ret += β[i+1] * bright(k, i, f, g)
+        ret += β[i+1] * bright(k, i, f, g, N=N)
     end
     return ret
 end
@@ -309,12 +309,7 @@ function legendre_same_length(f, g; dom_f=[-1,1], dom_g=[-1,1])
     ϕ_g_inv = x -> (((dom_g[2] - dom_g[1]) / 2) * (x + 1)) + dom_g[1]
     fᵣ = x -> f(ϕ_f_inv(x))
     gᵣ = x -> g(ϕ_g_inv(x))
-
-    fᵣ = poly_interpolate(fᵣ, degree!(f))
-    gᵣ = poly_interpolate(g, degree!(g))
-
-
-
+    return legendreconv_1_minus_1(fᵣ, gᵣ, N=N)
 end
 
 p = Poly([-1, 1], Polynomial([1,1]))
