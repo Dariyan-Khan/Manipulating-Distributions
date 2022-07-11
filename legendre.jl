@@ -298,9 +298,6 @@ function trunc_legrendre_series(f; terms=100)
     return T * c
 end
 
-    
-
-
 function legendre_same_length(f, g; dom_f=[-1,1], dom_g=[-1,1])
     N=100 #How many polynomials to use in Legrende expansion
     @assert dom_f[2] - dom_f[1] == dom_g[2] - dom_g[1]
@@ -317,3 +314,23 @@ p = Poly([-1, 1], Polynomial([1,1]))
 # gammaleft(2, p, p)
 # a = legendreconv_1_minus_1(p, p)
 
+function legendre_general(f, g)
+    dom_f = f.domain
+    dom_g = g.domain
+    rat = (dom_g[2] - dom_g[1])/(dom_f[2] - dom_f[1])
+    @assert rat >= 1
+    if dom_f[2] - dom_f[1] == dom_g[2] - dom_g[1]
+        return legendre_same_length(f, g; dom_f, dom_g)
+    else
+        if modf(rat)[1] == 0.0
+        # d-c / b-a > 1 and integer
+        # partition g into (d-c)/(b-a) subdomains and add
+
+        elseif 1 < rat < 2
+        # d-c/b-a > 2
+        # h is piecewise on 3 intervals
+
+        else
+        # split into sum satisfying conditions 1 and 2 
+    end
+end
