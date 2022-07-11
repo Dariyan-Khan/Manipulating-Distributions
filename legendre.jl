@@ -33,6 +33,8 @@ degree!(pol::Poly) = degree(pol.p)
 l_coeffs(pol::Poly) = legendrecoeff(pol.p)
 l_series(pol::Poly) =  legendreseries(pol.p)
 
+
+
 function eval!(pol::Poly, x::Real)
     if x>=pol.domain[1] && x<=pol.domain[2]
         return pol.p(x)
@@ -138,9 +140,15 @@ end
 # end
 # end
 
-function bleft(k::Int, n::Int, f::Poly, g::Poly)
-    α = l_coeffs(f)
-    β = l_coeffs(g)
+function bleft(k::Int, n::Int, f, g)
+    if typeof(f)==Poly && typeof(g) == Poly
+        α = l_coeffs(f)
+        β = l_coeffs(g)
+    else
+        α = legendrecoeff(f)
+        β = legendrecoeff(g)
+    end
+
     if k > n
         if n == 0
             if k == 0
@@ -166,8 +174,14 @@ end
 
 # find k,n-th entry of B right
 function bright(k::Int, n::Int, f::Poly, g::Poly)
-    α = legendrecoeff(f)
-    β = legendrecoeff(g)
+    if typeof(f)==Poly && typeof(g) == Poly
+        α = l_coeffs(f)
+        β = l_coeffs(g)
+    else
+        α = legendrecoeff(f)
+        β = legendrecoeff(g)
+    end
+
     if k > n
         if n == 0
             if k == 0
@@ -203,11 +217,17 @@ end
 #     return ret
 # end
 
-function gammaleft(k::Int, f::Poly, g::Poly)
+function gammaleft(k::Int, f, g; deg=-1)
     # find degree of f 
     # take sum and use bleft 
-    N = degree!(f)
-    β = l_coeffs(g)
+    if typeof(f)==poly && typeof(g) == Poly
+        N = degree!(f)
+        β = l_coeffs(g)
+    else
+        @assert deg > 0
+        N = deg
+        β = legendrecoeff(g)
+    end
     ret = 0 
     for i in 0:N
         ret += β[i+1] * bleft(k, i, f, g)
@@ -217,9 +237,15 @@ end
 
 
 # find γₖ right
-function gammaright(k::Int, f::Poly, g::Poly)
-    N = degree!(f)
-    β = legendrecoeff(g)
+function gammaright(k::Int, f, g)
+    if typeof(f)==poly && typeof(g) == Poly
+        N = degree!(f)
+        β = l_coeffs(g)
+    else
+        @assert deg > 0
+        N = deg
+        β = legendrecoeff(g)
+    end
     ret = 0 
     for i in 0:N
         ret += β[i+1] * bright(k, i, f, g)
@@ -235,51 +261,63 @@ function legendreconv_1_minus_1(f::Poly, g::Poly)
     #Calculate h but then we need to map x -> x+1
     pre_h_left = T * γ_left
     h_left = x ->  pre_h_left(x+1)
-    h_left = T / T \ h_left
+    #h_left = T / T \ h_left
 
     lam_right = k -> gammaright(k, f, g)
     γ_right = lam_right.(0:degree!(f) + degree!(g) + 1)
     #Calculate h but then we need to map x -> x+1
     pre_h_right = T * γ_right
     h_right = x ->  pre_h_right(x-1)
-    h_right = T / T \ h_right
-
+    #h_right = T / T \ h_right
+    return h_left, h_right
 end
 
-function trunc_legrendre_series(f; trunc=100)
+function legendreconv_1_minus_1(f, g, N::Int)
+    T = Legendre()
+    lam_left = k -> gammaleft(k, f, g)
+    γ_left = lam_left.(0:2*N + 1)
+    #Calculate h but then we need to map x -> x+1
+    pre_h_left = T * γ_left
+    h_left = x ->  pre_h_left(x+1)
+   # h_left = T / T \ h_left
+
+    lam_right = k -> gammaright(k, f, g)
+    γ_right = lam_right.(0:2*N + 1)
+    #Calculate h but then we need to map x -> x+1
+    pre_h_right = T * γ_right
+    h_right = x ->  pre_h_right(x-1)
+    #h_right = T / T \ h_right
+    return h_left, h_right
+end
+
+function trunc_legrendre_series(f; terms=100)
     T = Legendre()
     x = axes(T, 1)
     c = T \ f.(x)
-    c = c[:100]
+    c = c[:terms]
     return T * c
+end
 
     
 
 
-
-
-function legendre_same_length(f, g)
-    f = 
-    @assert f.domain[2] - f.domain[1] == g.domain[2] - g.domain[1]
+function legendre_same_length(f, g; dom_f=[-1,1], dom_g=[-1,1])
+    N=100 #How many polynomials to use in Legrende expansion
+    @assert dom_f[2] - dom_f[1] == dom_g[2] - dom_g[1]
     #Inverse of each of the phi functions in the paper
-    ϕ_f_inv = x -> (((f.domain[2] - f.domain[1]) / 2) * (x + 1)) + f.domain[1]
-    ϕ_g_inv = x -> (((g.domain[2] - g.domain[1]) / 2) * (x + 1)) + g.domain[1]
+    ϕ_f_inv = x -> (((dom_f[2] - dom_f[1]) / 2) * (x + 1)) + dom_f[1]
+    ϕ_g_inv = x -> (((dom_g[2] - dom_g[1]) / 2) * (x + 1)) + dom_g[1]
     fᵣ = x -> f(ϕ_f_inv(x))
     gᵣ = x -> g(ϕ_g_inv(x))
+
     fᵣ = poly_interpolate(fᵣ, degree!(f))
     gᵣ = poly_interpolate(g, degree!(g))
-
-    
-
-
-    
-
 
 
 
 end
 
-# p = Poly([-1, 1], Polynomial([1,1]))
+p = Poly([-1, 1], Polynomial([1,1]))
 # gammaleft(2, p, p)
 # a = legendreconv_1_minus_1(p, p)
 
