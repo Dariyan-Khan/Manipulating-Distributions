@@ -304,12 +304,13 @@ end
 function legendre_same_length(f, g; dom_f=[-1,1], dom_g=[-1,1])
     N=100 #How many polynomials to use in Legrende expansion
     @assert dom_f[2] - dom_f[1] == dom_g[2] - dom_g[1]
+    L = dom_f[2] - dom_f[1]
     #Inverse of each of the phi functions in the paper
     ϕ_f_inv = x -> (((dom_f[2] - dom_f[1]) / 2) * (x + 1)) + dom_f[1]
     ϕ_g_inv = x -> (((dom_g[2] - dom_g[1]) / 2) * (x + 1)) + dom_g[1]
     fᵣ = x -> f(ϕ_f_inv(x))
     gᵣ = x -> g(ϕ_g_inv(x))
-    return legendreconv_1_minus_1(fᵣ, gᵣ, N=N)
+    return (L/2) * legendreconv_1_minus_1(fᵣ, gᵣ, N=N)
 end
 
 p = Poly([-1, 1], Polynomial([1,1]))
