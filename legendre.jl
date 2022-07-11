@@ -1,5 +1,5 @@
 using ClassicalOrthogonalPolynomials, Plots, SpecialFunctions, Polynomials,
-InfiniteArrays
+InfiniteArrays, Intervals
 
 # compute fourier transform of m degree Legendre poly
 function legendreft(m) 
@@ -314,7 +314,15 @@ p = Poly([-1, 1], Polynomial([1,1]))
 # gammaleft(2, p, p)
 # a = legendreconv_1_minus_1(p, p)
 
-function legendre_general(f, g)
+function Indicator(d::Interval, x::Float64)
+    if x in d
+        return 1.0
+    else
+        return 0.0
+    end
+end
+
+function legendre_general(f::Poly, g::Poly)
     dom_f = f.domain
     dom_g = g.domain
     rat = (dom_g[2] - dom_g[1])/(dom_f[2] - dom_f[1])
@@ -325,7 +333,10 @@ function legendre_general(f, g)
         if modf(rat)[1] == 0.0
         # d-c / b-a > 1 and integer
         # partition g into (d-c)/(b-a) subdomains and add
-
+            r = modf(rat)[2]
+            d = Interval{Closed, Closed}(dom_g[1] + (j-1)*(dom_f[2] - dom_f[1]), dom_g[1] + j*(dom_f[2]-dom_f[1]))
+            gⱼ = x -> g(x)*Indicator(d, x)
+            h = x -> sum(legendre_same_length(f, gⱼ)(x) for j in 1:r)
         elseif 1 < rat < 2
         # d-c/b-a > 2
         # h is piecewise on 3 intervals
@@ -333,4 +344,5 @@ function legendre_general(f, g)
         else
         # split into sum satisfying conditions 1 and 2 
     end
+end
 end
