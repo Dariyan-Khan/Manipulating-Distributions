@@ -97,7 +97,7 @@ end
 
 function left_conv_unit(f, g; N=100)
     U = 2*N + 1
-    gamma_left = k -> gammaleft(k, f, g; N=100)
+    gamma_left = k -> gammaleft(k, f, g; N=N)
     γₗ = gamma_left.(0:U)
     legendre(-2..0) * γₗ
 end
@@ -105,7 +105,7 @@ end
 
 function right_conv_unit(f, g; N=100)
     U = 2*N + 1
-    gamma_right = k -> gammaright(k, f, g; N=100)
+    gamma_right = k -> gammaright(k, f, g; N=N)
     γᵣ = gamma_right.(0:U)
     legendre(0..2) * γᵣ
 end
@@ -123,7 +123,22 @@ function legendre_same_length(f, g, dom_f, dom_g; N=100)
 end
 
 
-
+function h_12(f, g, dom_f, dom_g,  x::Float64; N=100)
+    g1 = x -> g(x)*(x in dom_g[1]..(dom_g[1] + dom_f[2] - dom_f[1]))
+    g2 = x -> g(x)*(x in (dom_f[1] + dom_g[1])..(dom_g[2] - dom_f[2] + 2*dom_f[1]))
+    g3 = x -> g(x)*(x in (dom_g[2] - dom_f[2] + dom_f[1])..dom_g[2])
+    g4 = x -> g(x)*(x in (dom_g[2] - dom_f[2] + dom_f[1])..dom_g[2])
+    f1 = x -> f(x)*(x in (2*dom_f[2] + dom_g[1] - dom_g[2] - dom_f[1])..dom_f[2])
+    if x in (domf[1] + dom_g[1])..(dom_f[2] + dom_g[1])
+        return legendre_same_length(f, g1)(x)
+    elseif x in (dom_f[2] + dom_g[1])..(dom_f[1] + dom_g[2])
+        return legendre_same_length(f1, g2)(x) + legendre_same_length(f, g3)(x)
+    elseif x in (dom_f[1] + dom_g[2])..(dom_f[2] + dom_g[2])
+        return legendre_same_length(f, g4)(x)
+    else
+        return 0.0
+    end
+end
 
 
 
