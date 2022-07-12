@@ -156,7 +156,7 @@ function bleft(k::Int, n::Int, f, g; N=100)
             else
                 return α[k-1]/(2k-1) - α[k+1]/(2k+3)
             end
-        if n == 1
+        elseif n == 1
             if k == 0
                 return -bleft(1, 0, f, g)/3
             else
@@ -168,7 +168,6 @@ function bleft(k::Int, n::Int, f, g; N=100)
     else
         return bleft(n,k,f,g) * (-1)^(n+k) * (2k+1)/(2n+1)
     end
-end
 end
 
 
@@ -189,7 +188,7 @@ function bright(k::Int, n::Int, f::Poly, g::Poly; N=100)
             else
                 return α[k-1]/(2k-1) + α[k+1]/(2k+3)
             end
-        if n == 1
+        elseif n == 1
             if k == 0
                 return -bright(1, 0, f, g)/3
             else
@@ -201,7 +200,6 @@ function bright(k::Int, n::Int, f::Poly, g::Poly; N=100)
     else
         return bright(n,k,f,g) * (-1)^(n+k) * (2k+1)/(2n+1)
     end
-end
 end
 
 # find γₖ left  
@@ -322,10 +320,33 @@ function Indicator(d::Interval, x::Float64)
     end
 end
 
+function h_12(f::Poly, g::Poly, x::Float64)
+    dom_f = f.domain
+    dom_g = g.domain
+    d₁ = Interval{Closed, Closed}(dom_f[1] + dom_g[1], dom_f[2] + dom_g[1])
+    d₂ = Interval{Closed, Closed}(dom_f[2] + dom_g[1], dom_f[1] + dom_g[2])
+    d₃ = Interval{Closed, Closed}(dom_f[1] + dom_g[2], dom_f[2] + dom_g[2])
+    g1 = x -> g(x)*Indicator(Interval{Closed, Closed}(dom_g[1], dom_g[1] + dom_f[2] - dom_f[1]), x)
+    g2 = x -> g(x)*Indicator(Interval{Closed, Closed}(dom_f[1] + dom_g[1], dom_g[2] - dom_f[2] + 2*dom_f[1]), x)
+    g3 = x -> g(x)*Indicator(Interval{Closed, Closed}(dom_g[2] - dom_f[2] + dom_f[1], dom_g[2]), x)
+    g4 = x -> g(x)*Indicator(Interval{Closed, Closed}(dom_g[2] - dom_f[2] + dom_f[1], dom_g[2]), x)
+    f1 = x -> f(x)*Indicator(Interval{Closed, Closed}(2*dom_f[2] + dom_g[1] - dom_g[2] - dom_f[1], dom_f[2]), x)
+    if x in d₁
+        return legendre_same_length(f, g1)(x)
+    elseif x in d₂
+        return legendre_same_length(f1, g2)(x) + legendre_same_length(f, g3)(x)
+    elseif x in d₃
+        return legendre_same_length(f, g4)(x)
+    else
+        return 0.0
+    end
+end
+
 function legendre_general(f::Poly, g::Poly)
     dom_f = f.domain
     dom_g = g.domain
     rat = (dom_g[2] - dom_g[1])/(dom_f[2] - dom_f[1])
+    r = modf(rat)[2]
     @assert rat >= 1
     if dom_f[2] - dom_f[1] == dom_g[2] - dom_g[1]
         return legendre_same_length(f, g; dom_f, dom_g)
@@ -333,14 +354,14 @@ function legendre_general(f::Poly, g::Poly)
         if modf(rat)[1] == 0.0
         # d-c / b-a > 1 and integer
         # partition g into (d-c)/(b-a) subdomains and add
-            r = modf(rat)[2]
-            d = Interval{Closed, Closed}(dom_g[1] + (j-1)*(dom_f[2] - dom_f[1]), dom_g[1] + j*(dom_f[2]-dom_f[1]))
-            gⱼ = x -> g(x)*Indicator(d, x)
+            dⱼ = Interval{Closed, Closed}(dom_g[1] + (j-1)*(dom_f[2] - dom_f[1]), dom_g[1] + j*(dom_f[2]-dom_f[1]))
+            gⱼ = x -> g(x)*Indicator(dⱼ, x)
             h = x -> sum(legendre_same_length(f, gⱼ)(x) for j in 1:r)
+            return h
         elseif 1 < rat < 2
         # d-c/b-a > 2
         # h is piecewise on 3 intervals
-
+            return h_12(f, g)
         else
         # split into sum satisfying conditions 1 and 2 
     end
