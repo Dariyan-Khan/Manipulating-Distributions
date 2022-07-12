@@ -130,15 +130,49 @@ function h_12(f, g, dom_f, dom_g,  x::Float64; N=100)
     g4 = x -> g(x)*(x in (dom_g[2] - dom_f[2] + dom_f[1])..dom_g[2])
     f1 = x -> f(x)*(x in (2*dom_f[2] + dom_g[1] - dom_g[2] - dom_f[1])..dom_f[2])
     if x in (domf[1] + dom_g[1])..(dom_f[2] + dom_g[1])
-        return legendre_same_length(f, g1)(x)
+        return legendre_same_length(f, g1, dom_f, dom_g, N=N)(x)
     elseif x in (dom_f[2] + dom_g[1])..(dom_f[1] + dom_g[2])
-        return legendre_same_length(f1, g2)(x) + legendre_same_length(f, g3)(x)
+        return legendre_same_length(f1, g2, dom_f, dom_g, N=N)(x) + legendre_same_length(f, g3,  N=N)(x)
     elseif x in (dom_f[1] + dom_g[2])..(dom_f[2] + dom_g[2])
-        return legendre_same_length(f, g4)(x)
+        return legendre_same_length(f, g4, N=N)(x)
     else
         return 0.0
     end
 end
 
 
+function legendre_general(f, g, dom_f, dom_g; N=N)
+    rat = (dom_g[2] - dom_g[1])/(dom_f[2] - dom_f[1])
+    @assert rat >= 1
+    r = modf(rat)[2]
+    if dom_f[2] - dom_f[1] == dom_g[2] - dom_g[1]
+        return legendre_same_length(f, g, dom_f, dom_g, N=N)
+    else
+        if modf(rat)[1] == 0.0
+        # d-c / b-a > 1 and integer
+        # partition g into (d-c)/(b-a) subdomains and add
+            first = dom_g[1] + (j-1)*(dom_f[2] - dom_f[1])
+            last = dom_g[1] + j*(dom_f[2]-dom_f[1])
+            dⱼ = first..last
+            gⱼ = x -> g(x)*(x in dⱼ)
+            h = x -> sum(legendre_same_length(f, gⱼ, dom_f, dom_g,
+                                              N=N)(x) for j in 1:r)
+            return h
+        elseif 1 < rat < 2
+        # d-c/b-a > 2
+        # h is piecewise on 3 intervals
+            return x -> h_12(f, g, dom_f, dom_g, x)
+        else
+        # split into sum satisfying conditions 1 and 2 
+            i₁ = dom_g[1]..(dom_g[1] + (r-1)*(dom_f[2]-dom_f[1]))
+            i₂ = (dom_g[1] + (r-1)*(dom_f[2]-dom_f[1]))..dom_g[2]
+            g1 = x -> g(x)*(x in i₁)
+            g2 = x -> g(x)*(x in i₂)
+            h1 = x -> legendre_general(f, g1, dom_f, dom_g, N=N)(x)
+            h2 = x -> h_12(f, g2, dom_f, dom_g, N=N, x)
+            h = x -> h1(x) + h2(x)
+            return h   
+        end  
+    end
+end
 
