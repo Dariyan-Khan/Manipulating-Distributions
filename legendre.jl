@@ -346,8 +346,8 @@ function legendre_general(f::Poly, g::Poly)
     dom_f = f.domain
     dom_g = g.domain
     rat = (dom_g[2] - dom_g[1])/(dom_f[2] - dom_f[1])
-    r = modf(rat)[2]
     @assert rat >= 1
+    r = modf(rat)[2]
     if dom_f[2] - dom_f[1] == dom_g[2] - dom_g[1]
         return legendre_same_length(f, g; dom_f, dom_g)
     else
@@ -361,9 +361,17 @@ function legendre_general(f::Poly, g::Poly)
         elseif 1 < rat < 2
         # d-c/b-a > 2
         # h is piecewise on 3 intervals
-            return h_12(f, g)
+            return x -> h_12(f, g, x)
         else
         # split into sum satisfying conditions 1 and 2 
+            i₁ = Interval{Closed, Closed}(dom_g[1], dom_g[1] + (r-1)*(dom_f[2]-dom_f[1]))
+            i₂ = Interval{Closed, Closed}(dom_g[1] + (r-1)*(dom_f[2]-dom_f[1]), dom_g[2])
+            g1 = x -> g(x)*Indicator(i₁, x)
+            g2 = x -> g(x)*Indicator(i₂, x)
+            h1 = x -> legendre_general(f, g1)(x)
+            h2 = x -> h_12(f, g2, x)
+            h = x -> h1(x) + h2(x)
+            return h   
+        end  
     end
-end
 end
