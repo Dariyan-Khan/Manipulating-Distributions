@@ -62,3 +62,19 @@ P₋₂ = legendre(-2..0)
 x₋₂ = axes(P₋₂,1)
 
 P₋₂ \ Pconv.(x₋₂)
+
+
+## Piecewise ClassicalOrthogonalPolynomials
+
+using PiecewiseOrthogonalPolynomials
+# Discontinuous
+C₀ = ContinuousPolynomial{0}([0, 1, 2]) # Legendre on 0..1 and 1..2
+# Continuous
+C₁ = ContinuousPolynomial{1}([0, 1, 2]) # (1-x^2) * Jacobi(1,1) on 0..1 and 1..2, plus piecewise affine
+
+using Plots
+
+x = range(0, 2; length=100)
+plot(x, C₀[x,1:6])
+
+plot(x, C₁[x,1:7])
