@@ -1,3 +1,6 @@
+using ClassicalOrthogonalPolynomials, Plots
+
+
 function legendreft(m) 
     f = x -> 2 * (-1im)^m * sphericalbesselj(m, x)
     return f
@@ -12,14 +15,14 @@ end
 
 function legendreseries(f; N=nothing)
     T = Legendre()
-    c = legendrecoeff(f)
-    g = T * c
+    c = legendrecoeff(f, N=N)
+    N == nothing ? g = T * c : T[:, 1:N] * c
     return g
 end
 
 function bleft(k::Int, n::Int, f, g; N=100)
-        α = legendrecoeff(f)[:N]
-        β = legendrecoeff(g)[:N]
+    α = legendrecoeff(f, N=N)
+    β = legendrecoeff(g, N=N)
 
     if k > n
         if n == 0
@@ -41,5 +44,3 @@ function bleft(k::Int, n::Int, f, g; N=100)
         return bleft(n,k,f,g) * (-1)^(n+k) * (2k+1)/(2n+1)
     end
 end
-
-legendrecoeff
