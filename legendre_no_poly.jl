@@ -21,10 +21,7 @@ function legendreseries(f; N=nothing)
 end
 
 
-function bleft(k::Int, n::Int, f, g; N=100)
-    α = legendrecoeff(f, N=N)
-    β = legendrecoeff(g, N=N)
-
+function bleft_inner(k::Int, n::Int, f, g, α, β; N=100)
     if k >= n
         if n == 0
             if k == 0
@@ -46,11 +43,15 @@ function bleft(k::Int, n::Int, f, g; N=100)
     end
 end
 
+function bleft(k::Int, n::Int, f, g; N=100)
+    bleft_inner(k::Int, n::Int, f, g, legendrecoeff(f, N=N),
+                legendrecoeff(g, N=N); N=100)
+end
 
-function bright(k::Int, n::Int, f, g; N=100)
-    α = legendrecoeff(f, N=N)
-    β = legendrecoeff(g, N=N)
 
+
+
+function bright(k::Int, n::Int, f, g, α, β; N=100)
     if k >= n
         if n == 0
             if k == 0
@@ -72,13 +73,20 @@ function bright(k::Int, n::Int, f, g; N=100)
     end
 end
 
+
+function bright(k::Int, n::Int, f, g; N=100)
+    bright_inner(k::Int, n::Int, f, g, legendrecoeff(f, N=N),
+                legendrecoeff(g, N=N); N=100)
+end
+
+
 function gammaleft(k::Int, f, g; N=100)
     # find degree of f 
     # take sum and use bleft 
     β = legendrecoeff(f; N=N)
     ret = 0 
-    for i in 0:N
-        ret += β[i+1] * bleft(k, i, f, g,N=N)
+    for i in 0:N-1
+        ret += β[i+1] * bleft(k, i, f, g, N=N)
     end
     return ret
 end
@@ -180,10 +188,8 @@ f = x -> x^2
 g = x -> x+1
 
 
-for k in 0:3
-    for n in 0:3
-        println(bleft(k, n, f, g; N=100))
-    end
+for k in 0:1
+    println(gammaleft(k, f, g, N=100))
 end
 
 
