@@ -14,6 +14,7 @@ function legendrecoeff(f; N=nothing)
     N == nothing ? T \ f.(x) : T[:,1:N] \ f.(x)
 end
 
+
 function legendreseries(f; N=nothing)
     T = Legendre()
     c = legendrecoeff(f, N=N)
@@ -31,27 +32,30 @@ function bleft_inner(k::Int, n::Int, f, g, α, β; N=100)
             end
         elseif n == 1
             if k == 0
-                return -bleft(1, 0, f, g)/3
+                return -bleft_inner(1, 0, f, g, α, β, N=N)/3
             else
-                return bleft(k-1, 0, f, g)/(2k-1) - bleft(k,0,f,g) - bleft(k+1,0,f,g)/(2k+3)
+                return bleft_inner(k-1, 0, f, g, α, β, N=N)/(2k-1) - 
+                       bleft_inner(k, 0, f, g, α, β, N=N) - 
+                       bleft_inner(k+1, 0, f, g, α, β, N=N)/(2k+3)
             end
         else
-            return -(2n-1)/(2k+3) * bleft(k+1,n-1,f,g) + (2n-1)/(2k-1) * bleft(k-1,n-1,f,g) + bleft(k, n-2,f,g)
+            return -(2n-1)/(2k+3) * bleft_inner(k+1, n-1, f, g, α, β, N=N) + 
+                   (2n-1)/(2k-1) * bleft_inner(k-1,n-1,f, g, α, β, N=N) + 
+                   bleft_inner(k, n-2, f, g, α, β, N=N)
         end
     else
-        return bleft(n,k,f,g) * (-1)^(n+k) * (2k+1)/(2n+1)
+        return bleft_inner(n, k, f, g, α, β, N=N) * (-1)^(n+k) * (2k+1)/(2n+1)
     end
 end
 
+
 function bleft(k::Int, n::Int, f, g; N=100)
     bleft_inner(k::Int, n::Int, f, g, legendrecoeff(f, N=N),
-                legendrecoeff(g, N=N); N=100)
+                legendrecoeff(g, N=N), N=N)
 end
 
 
-
-
-function bright(k::Int, n::Int, f, g, α, β; N=100)
+function bright_inner(k::Int, n::Int, f, g, α, β; N=100)
     if k >= n
         if n == 0
             if k == 0
@@ -61,22 +65,26 @@ function bright(k::Int, n::Int, f, g, α, β; N=100)
             end
         elseif n == 1
             if k == 0
-                return -bright(1, 0, f, g)/3
+                return -bright_inner(1, 0, f, g, α, β, N=N)/3
             else
-                return bright(k-1, 0, f, g)/(2k-1) + bright(k,0,f,g) - bright(k+1,0,f,g)/(2k+3)
+                return bright_inner(k-1, 0, f, g, α, β, N=N)/(2k-1) + 
+                       bright_inner(k, 0, f, g, α, β, N=N) - 
+                       bright_inner(k+1, 0, f, g, α, β, N=N)/(2k+3)
             end
         else
-            return -(2n-1)/(2k+3) * bright(k+1,n-1,f,g) + (2n-1)/(2k-1) * bright(k-1,n-1,f,g) + bright(k, n-2,f,g)
+            return -(2n-1)/(2k+3) * bright_inner(k+1, n-1, f, g, α, β, N=N) + 
+                   (2n-1)/(2k-1) * bright_inner(k-1, n-1, f, g, α, β, N=N) + 
+                   bright_inner(k, n-2, f, g, α, β, N=N)
         end
     else
-        return bright(n,k,f,g) * (-1)^(n+k) * (2k+1)/(2n+1)
+        return bright_inner(n, k, f, g, α, β, N=N) * (-1)^(n+k) * (2k+1)/(2n+1)
     end
 end
 
 
 function bright(k::Int, n::Int, f, g; N=100)
     bright_inner(k::Int, n::Int, f, g, legendrecoeff(f, N=N),
-                legendrecoeff(g, N=N); N=100)
+                legendrecoeff(g, N=N), N=N)
 end
 
 
@@ -85,8 +93,8 @@ function gammaleft(k::Int, f, g; N=100)
     # take sum and use bleft 
     β = legendrecoeff(f; N=N)
     ret = 0 
-    for i in 0:N-1
-        ret += β[i+1] * bleft(k, i, f, g, N=N)
+    for i in 0:(N-1)
+        ret += β[i+1] * bleft(k, i, f, g, N=N+1)
     end
     return ret
 end
@@ -188,7 +196,7 @@ f = x -> x^2
 g = x -> x+1
 
 
-for k in 0:1
+for k in 1:1
     println(gammaleft(k, f, g, N=100))
 end
 
