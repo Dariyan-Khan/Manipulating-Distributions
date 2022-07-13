@@ -133,6 +133,16 @@ function right_conv_unit(f, g; N=100)
     legendre(0..2) * γᵣ
 end
 
+function conv_unit(f, g, x::Real; N=100)
+    if x in -2..0
+        return left_conv_unit(f, g, N=N)(x)
+    elseif x in 0..2
+        return right_conv_unit(f, g, N=N)(x)
+    else
+        return 0
+    end
+
+
 
 function legendre_same_length(f, g, dom_f, dom_g; N=100)
     @assert dom_f[2] - dom_f[1] == dom_g[2] - dom_g[1]
@@ -142,7 +152,8 @@ function legendre_same_length(f, g, dom_f, dom_g; N=100)
     ϕ_g_inv = x -> (((dom_g[2] - dom_g[1]) / 2) * (x + 1)) + dom_g[1]
     fᵣ = x -> f(ϕ_f_inv(x))
     gᵣ = x -> g(ϕ_g_inv(x))
-    return (L/2) * left_conv_unit(fᵣ, gᵣ, N=N), (L/2) * right_conv_unit(fᵣ, gᵣ, N=N)
+    # return (L/2) * left_conv_unit(fᵣ, gᵣ, N=N), (L/2) * right_conv_unit(fᵣ, gᵣ, N=N)
+    return x -> (L/2) * conv_unit(f, g, x, N=N)
 end
 
 
@@ -155,9 +166,9 @@ function h_12(f, g, dom_f, dom_g,  x::Float64; N=100)
     if x in (domf[1] + dom_g[1])..(dom_f[2] + dom_g[1])
         return legendre_same_length(f, g1, dom_f, dom_g, N=N)(x)
     elseif x in (dom_f[2] + dom_g[1])..(dom_f[1] + dom_g[2])
-        return legendre_same_length(f1, g2, dom_f, dom_g, N=N)(x) + legendre_same_length(f, g3,  N=N)(x)
+        return legendre_same_length(f1, g2, dom_f, dom_g, N=N)(x) + legendre_same_length(f, g3, dom_f, dom_g, N=N)(x)
     elseif x in (dom_f[1] + dom_g[2])..(dom_f[2] + dom_g[2])
-        return legendre_same_length(f, g4, N=N)(x)
+        return legendre_same_length(f, g4, dom_f, dom_g, N=N)(x)
     else
         return 0.0
     end
@@ -191,7 +202,7 @@ function legendre_general(f, g, dom_f, dom_g; N=100)
             i₂ = (dom_g[1] + (r-1)*(dom_f[2]-dom_f[1]))..dom_g[2]
             g1 = x -> g(x)*(x in i₁)
             g2 = x -> g(x)*(x in i₂)
-            h1 = x -> legendre_general(f, g1, dom_f, dom_g, N=N)(x)
+            h1 = x -> legendre_same_length(f, g1, dom_f, dom_g, N=N)(x)
             h2 = x -> h_12(f, g2, dom_f, dom_g, N=N, x)
             h = x -> h1(x) + h2(x)
             return h   
@@ -202,6 +213,7 @@ end
 f = x -> x^2
 g = x -> x+1
 
+legendre_same_length(f, g, )
 
 #println(gammaleft(5, f, g, N=5))
 
