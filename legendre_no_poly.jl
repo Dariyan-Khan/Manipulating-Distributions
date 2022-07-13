@@ -25,12 +25,12 @@ function bleft(k::Int, n::Int, f, g; N=100)
     α = legendrecoeff(f, N=N)
     β = legendrecoeff(g, N=N)
 
-    if k > n
+    if k >= n
         if n == 0
             if k == 0
                 return α[1] - α[2]/3
             else
-                return α[k-1]/(2k-1) - α[k+1]/(2k+3)
+                return α[k]/(2k-1) - α[k+2]/(2k+3)
             end
         elseif n == 1
             if k == 0
@@ -51,12 +51,12 @@ function bright(k::Int, n::Int, f, g; N=100)
     α = legendrecoeff(f, N=N)
     β = legendrecoeff(g, N=N)
 
-    if k > n
+    if k >= n
         if n == 0
             if k == 0
                 return α[1] + α[2]/3
             else
-                return α[k-1]/(2k-1) + α[k+1]/(2k+3)
+                return α[k]/(2k-1) + α[k+2]/(2k+3)
             end
         elseif n == 1
             if k == 0
@@ -119,7 +119,7 @@ function legendre_same_length(f, g, dom_f, dom_g; N=100)
     ϕ_g_inv = x -> (((dom_g[2] - dom_g[1]) / 2) * (x + 1)) + dom_g[1]
     fᵣ = x -> f(ϕ_f_inv(x))
     gᵣ = x -> g(ϕ_g_inv(x))
-    return (L/2) * left_conv_unt(fᵣ, gᵣ, N=N), (L/2) * left_conv_unt(fᵣ, gᵣ, N=N)
+    return (L/2) * left_conv_unit(fᵣ, gᵣ, N=N), (L/2) * right_conv_unit(fᵣ, gᵣ, N=N)
 end
 
 
@@ -141,7 +141,7 @@ function h_12(f, g, dom_f, dom_g,  x::Float64; N=100)
 end
 
 
-function legendre_general(f, g, dom_f, dom_g; N=N)
+function legendre_general(f, g, dom_f, dom_g; N=100)
     rat = (dom_g[2] - dom_g[1])/(dom_f[2] - dom_f[1])
     @assert rat >= 1
     r = modf(rat)[2]
@@ -175,4 +175,23 @@ function legendre_general(f, g, dom_f, dom_g; N=N)
         end  
     end
 end
+
+f = x -> x^2
+g = x -> x+1
+
+
+for k in 0:3
+    for n in 0:3
+        println(bleft(k, n, f, g; N=100))
+    end
+end
+
+
+
+
+# for k in 0:2
+#     for n in 0:2
+#         println(bleft(k, n, f, g; N=100))
+#     end
+# end
 
