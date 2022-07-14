@@ -164,14 +164,23 @@ function h_12(f, g, dom_f, dom_g,  x; N=100)
     g3 = x -> g(x)*(x in (dom_g[2] - dom_f[2] + dom_f[1])..dom_g[2])
     g4 = x -> g(x)*(x in (dom_g[2] - dom_f[2] + dom_f[1])..dom_g[2])
     f1 = x -> f(x)*(x in (2*dom_f[2] + dom_g[1] - dom_g[2] - dom_f[1])..dom_f[2])
+
     if x in (dom_f[1] + dom_g[1])..(dom_f[2] + dom_g[1])
-        return legendre_same_length(f, g1, dom_f, dom_g, N=N)(x)
+        new_dom = [dom_f[1] + dom_g[1], dom_f[2] + dom_g[1]]
+        return legendre_same_length(f, g1, new_dom, new_dom, N=N)(x)
+
     elseif x in (dom_f[2] + dom_g[1])..(dom_f[1] + dom_g[2])
-        return legendre_same_length(f1, g2, dom_f, dom_g, N=N)(x) + legendre_same_length(f, g3, dom_f, dom_g, N=N)(x)
+        new_dom = [dom_f[2] + dom_g[1], dom_f[1] + dom_g[2]]
+        return legendre_same_length(f1, g2, new_dom, new_dom, N=N)(x) + 
+               legendre_same_length(f, g3, new_dom, new_dom, N=N)(x)
+
     elseif x in (dom_f[1] + dom_g[2])..(dom_f[2] + dom_g[2])
-        return legendre_same_length(f, g4, dom_f, dom_g, N=N)(x)
+        new_dom = [dom_f[1] + dom_g[2], dom_f[2] + dom_g[2]]
+        return legendre_same_length(f, g4, new_dom, new_dom, N=N)(x)
+
     else
         return 0.0
+
     end
 end
 
@@ -223,9 +232,8 @@ f = x -> sin(x)
 g = x -> cos(x)
 
 
-h = legendre_general(f, g, [-1,1], [-1,2], N=2)
-println("hi")
-println(h(0))
+# h = legendre_general(f, g, [-1,1], [-1,1], N=10)
+# println(h(0))
 
 #println(gammaleft(5, f, g, N=5))
 
