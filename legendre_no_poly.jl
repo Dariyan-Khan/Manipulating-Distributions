@@ -122,23 +122,24 @@ function left_conv_unit(f, g; N=100)
     U = 2*N + 1
     gamma_left = k -> gammaleft(k, f, g; N=N)
     γₗ = gamma_left.(0:U)
-    legendre(-2..0) * γₗ
+    legendre(-2..0)[:, 1:U+1] * γₗ
 end
 
 
 function right_conv_unit(f, g; N=100)
+    #Nothing to use infinite array
     U = 2*N + 1
     gamma_right = k -> gammaright(k, f, g; N=N)
     γᵣ = gamma_right.(0:U)
-    legendre(0..2) * γᵣ
+    legendre(0..2)[:, 1:U+1] * γᵣ
 end
 
 
 function conv_unit(f, g, x::Real; N=100)
     if x in -2..0
-        return left_conv_unit(f, g, N=N)(x)
+        return left_conv_unit(f, g, N=N)[x]
     elseif x in 0..2
-        return right_conv_unit(f, g, N=N)(x)
+        return right_conv_unit(f, g, N=N)[x]
     else
         return 0
     end
@@ -157,13 +158,13 @@ function legendre_same_length(f, g, dom_f, dom_g; N=100)
 end
 
 
-function h_12(f, g, dom_f, dom_g,  x::Float64; N=100)
+function h_12(f, g, dom_f, dom_g,  x; N=100)
     g1 = x -> g(x)*(x in dom_g[1]..(dom_g[1] + dom_f[2] - dom_f[1]))
     g2 = x -> g(x)*(x in (dom_f[1] + dom_g[1])..(dom_g[2] - dom_f[2] + 2*dom_f[1]))
     g3 = x -> g(x)*(x in (dom_g[2] - dom_f[2] + dom_f[1])..dom_g[2])
     g4 = x -> g(x)*(x in (dom_g[2] - dom_f[2] + dom_f[1])..dom_g[2])
     f1 = x -> f(x)*(x in (2*dom_f[2] + dom_g[1] - dom_g[2] - dom_f[1])..dom_f[2])
-    if x in (domf[1] + dom_g[1])..(dom_f[2] + dom_g[1])
+    if x in (dom_f[1] + dom_g[1])..(dom_f[2] + dom_g[1])
         return legendre_same_length(f, g1, dom_f, dom_g, N=N)(x)
     elseif x in (dom_f[2] + dom_g[1])..(dom_f[1] + dom_g[2])
         return legendre_same_length(f1, g2, dom_f, dom_g, N=N)(x) + legendre_same_length(f, g3, dom_f, dom_g, N=N)(x)
@@ -202,7 +203,7 @@ function legendre_general(f, g, dom_f, dom_g; N=100)
         elseif 1 < rat < 2
         # d-c/b-a > 2
         # h is piecewise on 3 intervals
-            return x -> h_12(f, g, dom_f, dom_g, x)
+            return x -> h_12(f, g, dom_f, dom_g, x, N=N)
         else
         # split into sum satisfying conditions 1 and 2 
             i₁ = dom_g[1]..(dom_g[1] + (r-1)*(dom_f[2]-dom_f[1]))
@@ -222,7 +223,7 @@ f = x -> sin(x)
 g = x -> cos(x)
 
 
-h = legendre_general(f, g, [-1,1], [-1,1], N=2)
+h = legendre_general(f, g, [-1,1], [-1,2], N=2)
 println("hi")
 println(h(0))
 
