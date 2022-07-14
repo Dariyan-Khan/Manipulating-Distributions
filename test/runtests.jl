@@ -10,10 +10,13 @@ using ManipulatingDistributions, PiecewiseOrthogonalPolynomials, Test
 end
 
 @testset "Legendre series" begin
-    x
-    @test legendreseries(x -> sin(x); N=∞)
+    f₁ = x -> 0.2sin(3x) + 7exp(0.4x)
+    h₁ = x-> (legendreseries(f₁, N=100))[x]
+    xx = range(-1, 1, length=10)
+    @test f₁.(xx) ≈ h₁.(xx)
 
-    
+    # @test legendreseries(f, N=10) ≈ [3; 2; zeros(8)]
+    #@test legendreseries(f).[x]    
 end
 
 # @testset "Legendre" begin
