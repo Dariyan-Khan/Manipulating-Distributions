@@ -112,7 +112,7 @@ function gammaright(k::Int, f, g; N=100)
     for n in 0:(N-1)
         α_s = k + n + 2
         β_s = k + n + 2
-        ret += β[i+1] * bright(k, n, f, g, α_s=α_s, β_s=β_s)
+        ret += β[n+1] * bright(k, n, f, g, α_s=α_s, β_s=β_s)
     end
     return ret
 end
@@ -133,6 +133,7 @@ function right_conv_unit(f, g; N=100)
     legendre(0..2) * γᵣ
 end
 
+
 function conv_unit(f, g, x::Real; N=100)
     if x in -2..0
         return left_conv_unit(f, g, N=N)(x)
@@ -141,8 +142,7 @@ function conv_unit(f, g, x::Real; N=100)
     else
         return 0
     end
-
-
+end
 
 function legendre_same_length(f, g, dom_f, dom_g; N=100)
     @assert dom_f[2] - dom_f[1] == dom_g[2] - dom_g[1]
@@ -177,19 +177,26 @@ end
 
 function legendre_general(f, g, dom_f, dom_g; N=100)
     rat = (dom_g[2] - dom_g[1])/(dom_f[2] - dom_f[1])
-    @assert rat >= 1
-    r = modf(rat)[2]
+    #@assert rat >= 1
+    if rat < 1
+        return legendre_general(g, f, dom_g, dom_f, N=N)
+    end
+    r = Int(modf(rat)[2])
     if dom_f[2] - dom_f[1] == dom_g[2] - dom_g[1]
         return legendre_same_length(f, g, dom_f, dom_g, N=N)
     else
         if modf(rat)[1] == 0.0
         # d-c / b-a > 1 and integer
         # partition g into (d-c)/(b-a) subdomains and add
-            first = dom_g[1] + (j-1)*(dom_f[2] - dom_f[1])
-            last = dom_g[1] + j*(dom_f[2]-dom_f[1])
-            dⱼ = first..last
-            gⱼ = x -> g(x)*(x in dⱼ)
-            h = x -> sum(legendre_same_length(f, gⱼ, dom_f, dom_g,
+            funcs = Array{Function}(undef, r)
+            for j in 1:r
+                first = dom_g[1] + (j-1)*(dom_f[2] - dom_f[1])
+                last = dom_g[1] + j*(dom_f[2]-dom_f[1])
+                dⱼ = first..last
+                gⱼ = x -> g(x)*(x in dⱼ)
+                funcs[j] = gⱼ
+            end
+            h = x -> sum(legendre_same_length(f, funcs[j], dom_f, dom_g,
                                               N=N)(x) for j in 1:r)
             return h
         elseif 1 < rat < 2
@@ -210,10 +217,14 @@ function legendre_general(f, g, dom_f, dom_g; N=100)
     end
 end
 
-f = x -> x^2
-g = x -> x+1
 
-legendre_same_length(f, g, )
+f = x -> sin(x)
+g = x -> cos(x)
+
+
+h = legendre_general(f, g, [-1,1], [-1,1], N=2)
+println("hi")
+println(h(0))
 
 #println(gammaleft(5, f, g, N=5))
 
