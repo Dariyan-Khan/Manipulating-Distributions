@@ -1,6 +1,3 @@
-using LinearAlgebra
-using Plots
-
 function dftmatrix(n, lower=0, upper=2π)
     z = range(lower, upper, length=n+1)[1:end-1]
     [exp(-im*(k-1)*z[j]) for k=1:n, j=1:n] *(1 / sqrt(n))
@@ -29,7 +26,7 @@ function fourierconv(f, g, n; lower=0, upper=2π)
 end
 
 
-function conv(f, g, n; lower=0, upper=2π)
+function fft_conv(f, g, n; lower=0, upper=2π)
     A = fftmatrix(n)
     # B = conj.(A)
     ĉ = fourierconv(f, g, n, lower=lower, upper=upper)

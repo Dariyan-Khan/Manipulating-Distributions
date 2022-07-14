@@ -1,6 +1,3 @@
-using ClassicalOrthogonalPolynomials, Plots
-
-
 function legendreft(m) 
     f = x -> 2 * (-1im)^m * sphericalbesselj(m, x)
     return f
@@ -185,11 +182,11 @@ function h_12(f, g, dom_f, dom_g,  x; N=100)
 end
 
 
-function legendre_general(f, g, dom_f, dom_g; N=100)
+function legendre_conv(f, g, dom_f, dom_g; N=100)
     rat = (dom_g[2] - dom_g[1])/(dom_f[2] - dom_f[1])
     #@assert rat >= 1
     if rat < 1
-        return legendre_general(g, f, dom_g, dom_f, N=N)
+        return legendre_conv(g, f, dom_g, dom_f, N=N)
     end
     r = Int(modf(rat)[2])
     if dom_f[2] - dom_f[1] == dom_g[2] - dom_g[1]
@@ -227,23 +224,4 @@ function legendre_general(f, g, dom_f, dom_g; N=100)
     end
 end
 
-
-f = x -> sin(x)
-g = x -> cos(x)
-
-
-# h = legendre_general(f, g, [-1,1], [-1,1], N=10)
-# println(h(0))
-
-#println(gammaleft(5, f, g, N=5))
-
-
-
-
-
-# for k in 0:2
-#     for n in 0:2
-#         println(bleft(k, n, f, g; N=100))
-#     end
-# end
 
