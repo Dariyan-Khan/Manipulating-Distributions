@@ -1,6 +1,6 @@
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.7.0"
+julia_version = "1.7.1"
 manifest_format = "2.0"
 
 [[deps.AbstractFFTs]]
@@ -384,8 +384,8 @@ uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 version = "1.4.1"
 
 [[deps.PiecewiseOrthogonalPolynomials]]
-deps = ["BlockArrays", "BlockBandedMatrices", "ClassicalOrthogonalPolynomials", "ContinuumArrays", "FillArrays", "InfiniteArrays", "LazyArrays", "LazyBandedMatrices", "LinearAlgebra", "QuasiArrays"]
-git-tree-sha1 = "805b8b000362b2aec31fbd4e5b4322810edc82b7"
+deps = ["BlockArrays", "BlockBandedMatrices", "ClassicalOrthogonalPolynomials", "ContinuumArrays", "FillArrays", "InfiniteArrays", "InfiniteLinearAlgebra", "LazyArrays", "LazyBandedMatrices", "LinearAlgebra", "QuasiArrays"]
+git-tree-sha1 = "75ddae3922895c85cf19b0277353a388d8307380"
 repo-rev = "main"
 repo-url = "https://github.com/JuliaApproximation/PiecewiseOrthogonalPolynomials.jl"
 uuid = "4461d12d-4663-4550-8580-cb764c85e20f"
