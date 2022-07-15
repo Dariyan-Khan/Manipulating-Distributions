@@ -20,15 +20,29 @@ end
 end
 
 @testset "gamma left" begin
-    f₁ = x -> x^2
-    g₁
-    h₁ = x-> (legendreseries(f₁, N=100))[x]
-    xx = range(-1, 1, length=10)
-    @test f₁.(xx) ≈ h₁.(xx)
+    # f₁ = x -> x^2
+    # g₁ = x -> x + 1
+    # γ_left_true = [8/15, 2/9, 2/105, 0, 4/945]
+    # g_lam = k -> gammaleft(k, f, g, N=10)
+    # γ_exp = g_lam.(0:4)
+    # @test γ_left_true ≈ γ_exp
+    @test gammaleft(0, x->1, x->1, N=10) ≈ 1
+    f = x -> x^2
+    g = x -> x + 1
+    γ_left_true = [4/15, 6/18, 10/210, 0, 36/1890]
+    g_lam = k -> gammaleft(k, f, g, N=10)
+    γ_exp = g_lam.(0:0)
+    for (val_r, val_e) in zip(γ_left_true, γ_exp)
+        @test val_r ≈ val_e
+        #@test γ_left_true ≈ γ_exp
+    end
+end
+
+
 
     # @test legendreseries(f, N=10) ≈ [3; 2; zeros(8)]
     #@test legendreseries(f).[x]    
-end
+
 
 # @testset "Legendre" begin
 #     n = 10
