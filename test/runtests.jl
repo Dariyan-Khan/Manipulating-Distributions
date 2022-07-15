@@ -19,6 +19,17 @@ end
     #@test legendreseries(f).[x]    
 end
 
+@testset "gamma left" begin
+    f₁ = x -> x^2
+    g₁
+    h₁ = x-> (legendreseries(f₁, N=100))[x]
+    xx = range(-1, 1, length=10)
+    @test f₁.(xx) ≈ h₁.(xx)
+
+    # @test legendreseries(f, N=10) ≈ [3; 2; zeros(8)]
+    #@test legendreseries(f).[x]    
+end
+
 # @testset "Legendre" begin
 #     n = 10
 #     h = legendre_conv(one, one, [0,1], [0,1]; N=100)
