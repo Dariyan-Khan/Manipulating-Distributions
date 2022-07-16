@@ -1,5 +1,4 @@
-using Revise
-using ManipulatingDistributions, PiecewiseOrthogonalPolynomials, Test
+using  PiecewiseOrthogonalPolynomials, Test #, ManipulatingDistributions
 
 @testset "FFT" begin
     @testset "sin and cos convolution" begin
@@ -35,9 +34,9 @@ end
     γ_exp = g_lam.(0:4)
     @test γ_left_true ≈ γ_exp
     
-    end
-
 end
+
+
 
 
 
