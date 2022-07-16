@@ -226,4 +226,3 @@ function legendre_conv(f, g, dom_f, dom_g; N=100)
         end  
     end
 end
-
