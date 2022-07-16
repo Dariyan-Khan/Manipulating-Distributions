@@ -56,11 +56,11 @@ end
      end
 
     @testset "different function" begin
-        f = x -> x^4
+        f = x -> x^5
         g = x -> 1
-        γ_right_true = [1/5, -3/35, 0, -4/45, 0]
+        γ_right_true = [1/7, -3/35, 0, -4/45, 0]
         g_lam = k -> gammaright(k, f, g, N=10)
-        γ_exp = g_lam.(0:5)
+        γ_exp = g_lam.(0:4)
         println(γ_exp)
         println(γ_right_true)
         @test γ_right_true ≈ γ_exp
