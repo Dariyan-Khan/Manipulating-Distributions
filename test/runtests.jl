@@ -1,4 +1,9 @@
+using Revise
+using .ManipulatingDistributions
 using  PiecewiseOrthogonalPolynomials, Test #, ManipulatingDistributions
+includet("../src/legendre.jl")
+
+
 
 @testset "FFT" begin
     @testset "sin and cos convolution" begin
@@ -33,6 +38,16 @@ end
     g_lam = k -> gammaleft(k, f, g, N=10)
     γ_exp = g_lam.(0:4)
     @test γ_left_true ≈ γ_exp
+    
+end
+
+@testset "gamma right" begin
+    f = x -> x^2
+    g = x -> x + 1
+    γ_right_true = [2/5, -1/15, -1/21, -4/15, -2/105]
+    g_lam = k -> gammaright(k, f, g, N=10)
+    γ_exp = g_lam.(0:4)
+    @test γ_right_true ≈ γ_exp
     
 end
 

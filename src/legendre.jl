@@ -48,7 +48,7 @@ end
 
 function bleft(k::Int, n::Int, f, g; α_s=100, β_s=100)
     α = legendrecoeff(f, N=α_s)
-    β = legendrecoeff(f, N=β_s)
+    β = legendrecoeff(g, N=β_s)
     bleft_inner(k, n, f, g, α, β)
 end
 
@@ -82,7 +82,7 @@ end
 
 function bright(k::Int, n::Int, f, g; α_s=100, β_s=100)
     α = legendrecoeff(f, N=α_s)
-    β = legendrecoeff(f, N=β_s)
+    β = legendrecoeff(g, N=β_s)
     bright_inner(k, n, f, g, α, β)
 end
 
@@ -107,7 +107,7 @@ end
 
 # find γₖ right
 function gammaright(k::Int, f, g; N=100)
-    β = legendrecoeff(f; N=N)
+    β = legendrecoeff(g; N=N)
     ret = 0 
     for n in 0:(N-1)
         α_s = k + n + 2
@@ -227,11 +227,3 @@ function legendre_conv(f, g, dom_f, dom_g; N=100)
     end
 end
 
-f = x -> x^2
-g = x -> x+1
-γ_left_true = [4/15, 6/18, 10/210, 0, 36/1890]
-g_lam = k -> gammaleft(k, f, g, N=10)
-γ_exp = gammaleft(1, f, g, N=10) #g_lam.(0:0)
-println(γ_exp)
-
-# for (val_r, val_e) in zip(γ_left_true, γ_exp
