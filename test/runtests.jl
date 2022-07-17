@@ -1,7 +1,9 @@
 using Revise
 using .ManipulatingDistributions
 using  PiecewiseOrthogonalPolynomials, Test #, ManipulatingDistributions
+using Distributions
 includet("../src/legendre.jl")
+
 
 
 
@@ -11,6 +13,34 @@ includet("../src/legendre.jl")
         h = fft_conv(sin, cos, n)
         θ = range(0, 2π, length=2n+1)[1:end-1]
         @test h ≈ π*sin.(θ) # π*sin(θ) == ∫_0^2π sin(t)cos(θ-t) dt
+    end
+
+    @testset "normal distribution" begin
+        n=10
+        lower= 0
+        upper = 2π
+        d₁ = Normal(2, 0.5)
+        d₂ = Normal(1.5, 0.5)
+        # d₁ = Normal(0, 1)
+        # d₂ = Normal(0, 1)
+
+        #f_norm = Normal(0, sqrt(2))
+        f_norm = Normal(3.5, 0.5*sqrt(2))
+        # y₁ = pdf.(d, x₁)
+        # y₂ = pdf.(d, x₂)
+        # scatter(x, y)
+
+        norm₁ = x -> pdf(d₁, x)
+        norm₂ = y -> pdf(d₂, y)
+
+        # fourierconv(norm₁, norm₁, n)
+        z = range(lower, upper, length=2n+1)[1:end-1]
+
+        data = abs.(fft_conv(norm₁, norm₂, n, lower=lower, upper=upper))
+        
+
+        #@test data ≈ pdf.(f_norm, z)
+        @test isapprox(data,  pdf.(f_norm, z), atol=0.001)
     end
 end
 
@@ -56,13 +86,13 @@ end
      end
 
     @testset "different function" begin
-        f = x -> x^5
-        g = x -> 1
-        γ_right_true = [1/7, -3/35, 0, -4/45, 0]
-        g_lam = k -> gammaright(k, f, g, N=10)
+        f₁ = x -> x^10
+        g₁ = x -> 1
+        γ_right_true = [1/11, -3/35, 0, -4/45, 0]
+        g_lam = k -> gammaright(k, f₁ , g₁, N=10)
         γ_exp = g_lam.(0:4)
-        println(γ_exp)
-        println(γ_right_true)
+        # println(γ_exp)
+        # println(γ_right_true)
         @test γ_right_true ≈ γ_exp
         
         # f = x -> x^2

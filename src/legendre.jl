@@ -57,9 +57,9 @@ function bright_inner(k::Int, n::Int, f, g, α, β)
     if k >= n
         if n == 0
             if k == 0
-                return α[1] + α[2]/3
+                return (α[1] + (α[2]/3))
             else
-                return α[k]/(2k-1) + α[k+2]/(2k+3)
+                return (α[k]/(2k-1) + α[k+2]/(2k+3))
             end
         elseif n == 1
             if k == 0
@@ -90,7 +90,7 @@ end
 function gammaleft(k::Int, f, g; N=100)
     # find degree of f 
     # take sum and use bleft 
-    β = legendrecoeff(g; N=N)
+    β = legendrecoeff(g, N=N)
     #println(β)
     ret = 0 
     for n in 0:(N-1)
@@ -107,12 +107,13 @@ end
 
 # find γₖ right
 function gammaright(k::Int, f, g; N=100)
-    β = legendrecoeff(g; N=N)
+    β = legendrecoeff(g, N=N)
     ret = 0 
     for n in 0:(N-1)
         α_s = k + n + 2
         β_s = k + n + 2
-        ret += β[n+1] * bright(k, n, f, g, α_s=α_s, β_s=β_s)
+        b = bright(k, n, f, g, α_s=α_s, β_s=β_s)
+        ret += β[n+1] * b
     end
     return ret
 end
