@@ -2,6 +2,7 @@ using Revise
 using .ManipulatingDistributions
 using  PiecewiseOrthogonalPolynomials, Test #, ManipulatingDistributions
 using Distributions
+using ClassicalOrthogonalPolynomials
 includet("../src/legendre.jl")
 
 

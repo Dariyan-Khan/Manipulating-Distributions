@@ -227,3 +227,8 @@ function legendre_conv(f, g, dom_f, dom_g; N=100)
         end  
     end
 end
+
+# f = x -> x^2
+# g = x -> x + 1
+# h = legendre_conv(f, g, [-1, 1], [0, 3], N=3)
+# h
