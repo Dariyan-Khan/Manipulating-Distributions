@@ -45,6 +45,7 @@ includet("../src/legendre.jl")
     end
 end
 
+
 @testset "Legendre series" begin
     f₁ = x -> 0.2sin(3x) + 7exp(0.4x)
     h₁ = x-> (legendreseries(f₁, N=100))[x]
@@ -72,41 +73,51 @@ end
     
 end
 
-@testset "gamma right" begin
+ @testset "gamma right" begin
     @testset "same function" begin
         @test gammaright(0, x->1, x->1, N=10) ≈ 1
     
-        f = x -> x^4
-        g = x -> x^4
-        γ_right_true = [1/25, -3/275, 32/385, -216/3575, -16/25025]
-        g_lam_r = k -> gammaright(k, f ,g, N=10)
-        γ_exp = g_lam_r.(0:4)
-        # g_lam = k -> gammaright(k, f, g, N=10)
-        # γ_exp = g_lam.(0:4)
-        @test γ_right_true ≈ γ_exp
+    #     f = x -> x^2
+    #     g = x -> x^2
+    #     γ_right_true = [1/9, -1/21, 8/63, -4/27, -4/105, -4/945]
+    #     g_lam_r = k -> gammaright(k, f ,g, N=10)
+    #     γ_exp = g_lam_r.(0:5)
+    #     # g_lam = k -> gammaright(k, f, g, N=10)
+    #     # γ_exp = g_lam.(0:4)
+    #     @test γ_right_true ≈ γ_exp
      end
 
     @testset "different function" begin
-        f = x -> x^2
-        g = x -> x + 1
-        γ_right_true = [2/5, -1/15, -1/21, -4/15, -2/105]
-        g_lam = k -> gammaright(k, f, g, N=10)
+        f₁ = x -> x^10
+        g₁ = x -> 1
+        γ_right_true = [1/11, -3/35, 0, -4/45, 0]
+        g_lam = k -> gammaright(k, f₁ , g₁, N=10)
         γ_exp = g_lam.(0:4)
+        # println(γ_exp)
+        # println(γ_right_true)
         @test γ_right_true ≈ γ_exp
-
-        # f₁ = x -> x^10
-        # g₁ = x -> 1
-        # γ_right_true = [1/11, -3/35, 0, -4/45, 0] This vector needs to be recalculated
-        # g_lam = k -> gammaright(k, f₁ , g₁, N=10)
-        # γ_exp = g_lam.(0:4)
-        # # println(γ_exp)
-        # # println(γ_right_true)
-        # @test γ_right_true ≈ γ_exp
         
+        # f = x -> x^2
+        # g = x -> x + 1
+        # γ_right_true = [2/5, -1/15, -1/21, -4/15, -2/105]
+        # g_lam = k -> gammaright(k, f, g, N=10)
+        # γ_exp = g_lam.(0:4)
+        # @test γ_right_true ≈ γ_exp
     end
 end
 
+@testset "legendre convolution" begin
+    @testset "same interval" begin
+        n = 1000
+        h = legendre_conv(sin, cos, [-1, 1], [-1, 1], N = 3)
+        θ = range(-1, 1, length=2n+1)[1:end-1]
+        @test h.(θ) ≈ π*sin.(θ)
+    end
 
+    @testset "general interval" begin
+        
+    end
+end
 
 
 
