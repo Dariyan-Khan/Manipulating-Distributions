@@ -5,16 +5,16 @@ end
 
 
 # compute legendre series of a poly
-function legendrecoeff(f; N=∞)
-    T = Legendre()
+function legendrecoeff(f; interval=-1..1, N=∞)
+    T = legendre(interval)
     x = axes(T, 1)
     N == ∞ ? T \ f.(x) : T[:,1:N] \ f.(x)
 end
 
 
-function legendreseries(f; N=∞)
-    T = Legendre()
-    c = legendrecoeff(f, N=N)
+function legendreseries(f; interval=-1..1, N=∞)
+    T = legendre(interval)
+    c = legendrecoeff(f, interval=interval, N=N)
     N == ∞ ? T * c : T[:, 1:N] * c
 end
 
@@ -232,3 +232,15 @@ end
 # g = x -> x + 1
 # h = legendre_conv(f, g, [-1, 1], [0, 3], N=3)
 # h
+
+function legendre_conv_series(f, g, dom_f, dom_g; N=100)
+    h = legendre_conv(f, g, dom_f, dom_g, N=N)
+    start = dom_f[1] + dom_g[1]
+    stop = dom_f[2] + dom_g[2]
+    legendreseries(h, interval=start..stop, N=N)
+end
+
+# f = x -> x^2
+# g = x -> x + 1
+# h = legendre_conv_series(f, g, [-1, 1], [0, 3], N=3)
+
