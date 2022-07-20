@@ -69,11 +69,24 @@ function bleft_matrix(f, g; α_s=100, β_s=100)
     β = legendrecoeff(g, N=β_s)
     B = Matrix{Float64}(undef, α_s + 2*β_s + 1, β_s)
     B[1,1] = (α[1] - (α[2]/3))
+    #populate n=0 column
     for k in 2:(α_s + 2*β_s + 1)
-        B[k,1] = α[k]/(2k-1) - α[k+2]/(2k+3)
-        B[1, k] = B[k,1] * (-1)^(n+k) * (2k+1)/(2n+1)
-        B
-        
+        k₋ = k - 1
+        B[k, 1] = α[k₋]/(2k₋-1) - α[k+1]/(2k₋-+3)
+        B[1, k] = B[k, 1] * (-1)^(0+k₋) * (1)/(2k₋+1)
+        if k > 2
+            B[k-1, 2] = B[k-2, 1]/(2(k-2)-1) -
+                        B[k-1, 1] -
+                        B[k, 1]/(2(k-2)+3)
+            B[2, k-1] = B[k-1, 2] * (-1)^(1+k-2) * (2(k-2)+1)#/(2n+1)
+        end
+    end
+
+    for k in  3:(α_s + 2*β_s + 1)
+        for n in 
+
+
+
 
 
 
