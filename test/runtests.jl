@@ -1,11 +1,8 @@
-using Revise
-using .ManipulatingDistributions
-using  PiecewiseOrthogonalPolynomials, Test #, ManipulatingDistributions
+using Revise, ManipulatingDistributions, PiecewiseOrthogonalPolynomials, Test
 using Distributions
 using ClassicalOrthogonalPolynomials
-includet("../src/legendre.jl")
 
-
+import ManipulatingDistributions: gammaleft, gammaright
 
 
 @testset "FFT" begin

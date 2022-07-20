@@ -20,12 +20,22 @@ end
 
 
 function bleft_inner(k::Int, n::Int, f, g, α, β)
+    # B = Matrix{Float64}(undef, N, N)
+
+    # B[1,1] = (α[1] - (α[2]/3))
+    # for k = 0:N-1
+    #     B[k+1,1] =  α[k]/(2k-1) - α[k+2]/(2k+3)
+    # end
+    # B[1,2] = -B[2,1]/3
+    # TODO: complete 
+
     if k >= n
         if n == 0
             if k == 0
                 return (α[1] - (α[2]/3))#α[1] - α[2]/3
             else
                 return α[k]/(2k-1) - α[k+2]/(2k+3)
+                
             end
         elseif n == 1
             if k == 0
@@ -45,7 +55,9 @@ function bleft_inner(k::Int, n::Int, f, g, α, β)
     end
 end
 
-
+"""
+B_{k,n}^{left} from (4.5)
+"""
 function bleft(k::Int, n::Int, f, g; α_s=100, β_s=100)
     α = legendrecoeff(f, N=α_s)
     β = legendrecoeff(g, N=β_s)
@@ -86,7 +98,12 @@ function bright(k::Int, n::Int, f, g; α_s=100, β_s=100)
     bright_inner(k, n, f, g, α, β)
 end
 
+"""
+    gammaleft(k, f, g; N=100)
 
+Computes γₖ from (4.3) in Hale&Townsend, which is the Legendre coefficients of
+f ⋆ g on the interval [-2,0], where both f and g are supported on [-1,1].
+"""
 function gammaleft(k::Int, f, g; N=100)
     # find degree of f 
     # take sum and use bleft 
