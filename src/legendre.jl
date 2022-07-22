@@ -64,12 +64,11 @@ function bleft(k::Int, n::Int, f, g; α_s=100, β_s=100)
     bleft_inner(k, n, f, g, α, β)
 end
 
-
 function bleft_matrix(α; α_s=100, β_s=100)
-    B = zeros(Float64, α_s + 2β_s + 2, β_s+1)
+    B = zeros(Float64, α_s + β_s + 4, β_s+1)
     B[1,1] = (α[1] - (α[2]/3))
     #populate n=0 column
-    for k in 2:(α_s + 2β_s + 2)
+    for k in 2:(α_s + β_s + 3)
         k₋ = k - 1
         B[k, 1] = α[k₋]/(2k₋-1) - α[k+1]/(2k₋+3)
         if k ≤ (β_s+1)
@@ -86,16 +85,14 @@ function bleft_matrix(α; α_s=100, β_s=100)
     end
 
     for n in 3:(β_s + 1)
-        for k in n:(α_s + 2β_s + 2)
-            if n + k ≤ α_s + 2β_s + 3
-                k₋ = k - 1
-                n₋ = n - 2
-                B[k, n] = -((2n₋+1)/(2k₋+3)) * B[k+1, n-1] +
-                          ((2n₋+1)/(2k₋-1)) * B[k-1, n-1] +
-                          B[k, n-2]
-                if k ≤ β_s+1
-                    B[n, k] = B[k, n] * (-1)^(n-1+k-1) * ((2k₋+1)/(2*(n-1)+1))
-                end
+        for k in n:(α_s + β_s + 2)
+            k₋ = k - 1
+            n₋ = n - 2
+            B[k, n] = -((2n₋+1)/(2k₋+3)) * B[k+1, n-1] +
+                        ((2n₋+1)/(2k₋-1)) * B[k-1, n-1] +
+                        B[k, n-2]
+            if k ≤ β_s+1
+                B[n, k] = B[k, n] * (-1)^(n-1+k-1) * ((2k₋+1)/(2*(n-1)+1))
             end
         end
     end
@@ -110,7 +107,7 @@ f and g respectively.
 """
 
 function gammaleft_matrix(f, g; α_s=100, β_s=100)
-    α = legendrecoeff(f, N=α_s + 2β_s + 3)
+    α = legendrecoeff(f, N=α_s + β_s + 4)
     β = legendrecoeff(g, N=β_s + 1)
     return bleft_matrix(α, α_s=α_s, β_s=β_s) * β
 end
