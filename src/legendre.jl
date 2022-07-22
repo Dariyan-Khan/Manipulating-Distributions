@@ -64,30 +64,56 @@ function bleft(k::Int, n::Int, f, g; α_s=100, β_s=100)
     bleft_inner(k, n, f, g, α, β)
 end
 
-function bleft_matrix(f, g; α_s=100, β_s=100)
-    α = legendrecoeff(f, N=α_s)
-    β = legendrecoeff(g, N=β_s)
-    B = Matrix{Float64}(undef, α_s + 2*β_s + 1, β_s)
+
+function bleft_matrix(α; α_s=100, β_s=100)
+    B = zeros(Float64, α_s + 2β_s + 2, β_s+1)
     B[1,1] = (α[1] - (α[2]/3))
     #populate n=0 column
-    for k in 2:(α_s + 2*β_s + 1)
+    for k in 2:(α_s + 2β_s + 2)
         k₋ = k - 1
-        B[k, 1] = α[k₋]/(2k₋-1) - α[k+1]/(2k₋-+3)
-        B[1, k] = B[k, 1] * (-1)^(0+k₋) * (1)/(2k₋+1)
+        B[k, 1] = α[k₋]/(2k₋-1) - α[k+1]/(2k₋+3)
+        if k ≤ (β_s+1)
+            B[1, k] = B[k, 1] * (-1)^(0+k₋) * (1)/(2k₋+1)
+        end
         if k > 2
             B[k-1, 2] = B[k-2, 1]/(2(k-2)-1) -
                         B[k-1, 1] -
                         B[k, 1]/(2(k-2)+3)
-            B[2, k-1] = B[k-1, 2] * (-1)^(1+k-2) * (2(k-2)+1)#/(2n+1)
+            if (k-1) ≤ (β_s+1)
+                B[2, k-1] = B[k-1, 2] * (-1)^(1+k-2) * (3/(2*(k-2)+1))  #(2(k-2)+1)#/(2n+1)
+            end
         end
     end
 
-    for k in  3:(α_s + 2*β_s + 1)
-        for n in 
+    for n in 3:(β_s + 1)
+        for k in n:(α_s + 2β_s + 2)
+            if n + k ≤ α_s + 2β_s + 3
+                k₋ = k - 1
+                n₋ = n - 2
+                B[k, n] = -((2n₋+1)/(2k₋+3)) * B[k+1, n] +
+                          ((2n₋+1)/(2k₋-1)) * B[k-1, n] +
+                          B[k, n-1]
+                if k ≤ β_s+1
+                    B[n, k] = B[k, n] * (-1)^(n-1+k-1) * ((2k₋+1)/(2*(n-1)+1))
+                end
+            end
+        end
+    end
 
+    return B[1:α_s + β_s + 2, 1:β_s+1]
+end
 
+"""
+Calculates the gamma coefficients for functions f and g, expanded in the
+Legendre basis. Set α_s and β_s to the highest degree used in the expansion for
+f and g respectively.
+"""
 
-
+function gammaleft_matrix(f, g; α_s=100, β_s=100)
+    α = legendrecoeff(f, N=α_s + 2β_s + 3)
+    β = legendrecoeff(g, N=β_s + 1)
+    return bleft_matrix(α, α_s=α_s, β_s=β_s) * β
+end
 
 
 function bright_inner(k::Int, n::Int, f, g, α, β)

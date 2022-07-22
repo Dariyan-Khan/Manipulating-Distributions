@@ -2,7 +2,8 @@ using Revise, ManipulatingDistributions, PiecewiseOrthogonalPolynomials, Test
 using Distributions
 using ClassicalOrthogonalPolynomials
 
-import ManipulatingDistributions: gammaleft, gammaright
+import ManipulatingDistributions: gammaleft, gammaright, legendreseries,
+                                  gammaleft_matrix
 
 
 @testset "FFT" begin
@@ -70,51 +71,60 @@ end
     
 end
 
- @testset "gamma right" begin
-    @testset "same function" begin
-        @test gammaright(0, x->1, x->1, N=10) ≈ 1
+
+@testset "gamma left matrix" begin
+    f = x -> x^2
+    g = x -> x + 1
+    γ_left_true = [4/15, 6/18, 10/210, 0, 36/1890]
+    γ_exp = gammaleft_matrix(f, g; α_s=2, β_s=1)
+    @test γ_left_true ≈ γ_exp
+end
+
+#  @testset "gamma right" begin
+#     @testset "same function" begin
+#         @test gammaright(0, x->1, x->1, N=10) ≈ 1
     
-    #     f = x -> x^2
-    #     g = x -> x^2
-    #     γ_right_true = [1/9, -1/21, 8/63, -4/27, -4/105, -4/945]
-    #     g_lam_r = k -> gammaright(k, f ,g, N=10)
-    #     γ_exp = g_lam_r.(0:5)
-    #     # g_lam = k -> gammaright(k, f, g, N=10)
-    #     # γ_exp = g_lam.(0:4)
-    #     @test γ_right_true ≈ γ_exp
-     end
+#     #     f = x -> x^2
+#     #     g = x -> x^2
+#     #     γ_right_true = [1/9, -1/21, 8/63, -4/27, -4/105, -4/945]
+#     #     g_lam_r = k -> gammaright(k, f ,g, N=10)
+#     #     γ_exp = g_lam_r.(0:5)
+#     #     # g_lam = k -> gammaright(k, f, g, N=10)
+#     #     # γ_exp = g_lam.(0:4)
+#     #     @test γ_right_true ≈ γ_exp
+#      end
 
-    @testset "different function" begin
-        f₁ = x -> x^10
-        g₁ = x -> 1
-        γ_right_true = [1/11, -3/143, 0, -14/429, 0]
-        g_lam = k -> gammaright(k, f₁ , g₁, N=10)
-        γ_exp = g_lam.(0:4)
-        # println(γ_exp)
-        # println(γ_right_true)
-        @test γ_right_true ≈ γ_exp
+#     @testset "different function" begin
+#         f₁ = x -> x^10
+#         g₁ = x -> 1
+#         γ_right_true = [1/11, -3/143, 0, -14/429, 0]
+#         g_lam = k -> gammaright(k, f₁ , g₁, N=10)
+#         γ_exp = g_lam.(0:4)
+#         # println(γ_exp)
+#         # println(γ_right_true)
+#         @test γ_right_true ≈ γ_exp
         
-        f = x -> x^2
-        g = x -> x + 1
-        γ_right_true = [2/5, -1/15, -1/21, -4/15, -2/105]
-        g_lam = k -> gammaright(k, f, g, N=10)
-        γ_exp = g_lam.(0:4)
-        @test γ_right_true ≈ γ_exp
-    end
-end
+#         f = x -> x^2
+#         g = x -> x + 1
+#         γ_right_true = [2/5, -1/15, -1/21, -4/15, -2/105]
+#         g_lam = k -> gammaright(k, f, g, N=10)
+#         γ_exp = g_lam.(0:4)
+#         @test γ_right_true ≈ γ_exp
+#     end
+# end
 
-@testset "legendre convolution" begin
-    @testset "same interval" begin
-        n = 1000
-        h = legendre_conv(sin, cos, [-1, 1], [-1, 1], N = 3)
-        θ = range(-1, 1, length=2n+1)[1:end-1]
-        @test h.(θ) ≈ π*sin.(θ)
-    end
+# @testset "legendre convolution" begin
+#     @testset "same interval" begin
+#         n = 1000
+#         h = legendre_conv(sin, cos, [-1, 1], [-1, 1], N = 3)
+#         θ = range(-1, 1, length=2n+1)[1:end-1]
+#         @test h.(θ) ≈ π*sin.(θ)
+#     end
 
-    @testset "general interval" begin
+#     @testset "general interval" begin
         
-    end
-end
+#     end
+# end
 
 
 
