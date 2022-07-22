@@ -78,6 +78,14 @@ end
     γ_left_true = [4/15, 6/18, 10/210, 0, 36/1890]
     γ_exp = gammaleft_matrix(f, g; α_s=2, β_s=1)
     @test γ_left_true ≈ γ_exp
+
+    f = x -> (2x+1)^3
+    g = x -> x^2 + 5x - 9
+    γ_left_true = [-(365/21), -(292/7), -(2381/63), -(844/45), -(1964/385), 64/315, 32/3465]
+    γ_exp = gammaleft_matrix(f, g; α_s=3, β_s=2)
+    @test γ_left_true ≈ γ_exp
+
+
 end
 
 #  @testset "gamma right" begin
