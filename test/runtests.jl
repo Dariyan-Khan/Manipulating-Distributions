@@ -3,7 +3,7 @@ using Distributions
 using ClassicalOrthogonalPolynomials
 
 import ManipulatingDistributions: gammaleft, gammaright, legendreseries,
-                                  gammaleft_matrix
+                                  gammaleft_matrix, gammaright_matrix
 
 
 @testset "FFT" begin
@@ -88,38 +88,51 @@ end
 
 end
 
-#  @testset "gamma right" begin
-#     @testset "same function" begin
-#         @test gammaright(0, x->1, x->1, N=10) ≈ 1
-    
-#     #     f = x -> x^2
-#     #     g = x -> x^2
-#     #     γ_right_true = [1/9, -1/21, 8/63, -4/27, -4/105, -4/945]
-#     #     g_lam_r = k -> gammaright(k, f ,g, N=10)
-#     #     γ_exp = g_lam_r.(0:5)
-#     #     # g_lam = k -> gammaright(k, f, g, N=10)
-#     #     # γ_exp = g_lam.(0:4)
-#     #     @test γ_right_true ≈ γ_exp
-#      end
+@testset "gamma right matrix" begin
+    @testset "same function" begin
+        @test gammaright_matrix(x->1, x->1, α_s=0, β_s=0) ≈ [1]
+        f = x -> x^2
+        g = x -> x^2
+        γ_right_true = [1/9, -1/21, 8/63, -4/27, -4/105, -4/945]
+        γ_exp = gammaright_matrix(f, g, α_s=2, β_s=2)
+        @test γ_right_true ≈ γ_exp
+    end
 
-#     @testset "different function" begin
-#         f₁ = x -> x^10
-#         g₁ = x -> 1
-#         γ_right_true = [1/11, -3/143, 0, -14/429, 0]
-#         g_lam = k -> gammaright(k, f₁ , g₁, N=10)
-#         γ_exp = g_lam.(0:4)
-#         # println(γ_exp)
-#         # println(γ_right_true)
-#         @test γ_right_true ≈ γ_exp
-        
-#         f = x -> x^2
-#         g = x -> x + 1
-#         γ_right_true = [2/5, -1/15, -1/21, -4/15, -2/105]
-#         g_lam = k -> gammaright(k, f, g, N=10)
-#         γ_exp = g_lam.(0:4)
-#         @test γ_right_true ≈ γ_exp
-#     end
-# end
+    @testset "different function" begin
+        # f₁ = x -> 1
+        # g₁ = x -> x^3
+        # γ_right_true = [1/5, 0, -1/7, 0, -2/35]
+        # γ_exp = gammaright_matrix(f₁, g₁, α_s=0, β_s=3)
+        # @test γ_right_true ≈ γ_exp
+
+        # f₁ = x -> x+1
+        # g₁ = x -> x^3
+        # γ_right_true = [1/5, 8/35, -2/7, -1/45, -4/35, -2/315]
+        # γ_exp = gammaright_matrix(f₁, g₁, α_s=1, β_s=3)
+        # @test γ_right_true ≈ γ_exp
+
+        # f₁ = x -> (2x+1)^3
+        # g₁ = x -> x^3 + 3
+        # γ_right_true = [186/7, -743/105, -377/35, -862/165, -(1194/385),
+        #                  -(484/1365), -(16/385), -(32/15015)]  
+        # γ_exp = gammaright_matrix(f₁, g₁, α_s=3, β_s=3)
+        # @test γ_right_true ≈ γ_exp
+
+        f₁ = x -> (3x +2)^5
+        g₁ = x -> (x+4)^4
+        γ_right_true = [39434387/165, 7095810/77, -(4994755/39), -(1110657260/9009), -(295610936/5005), -(5556808/315),
+                        -(11500480/3927), -(12160/77), -(9600/1729), -(576/5005), -(1728/1616615)]
+        γ_exp = gammaright_matrix(f₁, g₁, α_s=5, β_s=4)
+        @test γ_right_true ≈ γ_exp
+
+        f₂ = x -> x^2
+        g₂ = x -> x + 1
+        γ_right_true = [2/5, -1/15, -1/21, -4/15, -2/105]
+        γ_exp = gammaright_matrix(f₂, g₂, α_s=2, β_s=1)
+        @test γ_right_true ≈ γ_exp
+    end
+end
+
 
 # @testset "legendre convolution" begin
 #     @testset "same interval" begin
