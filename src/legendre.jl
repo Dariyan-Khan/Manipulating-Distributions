@@ -33,24 +33,33 @@ end
  Calculates B_{k,n}^{left} from (4.5)
 """
 function bleft_matrix(α; α_s=100, β_s=100)
+    if β_s == 0
+        return (α[1] - (α[2]/3))
+    end
+
     B = zeros(Float64, α_s + β_s + 3, β_s+1)
     B[1,1] = (α[1] - (α[2]/3))
     #populate n=0 column
     for k in 2:(α_s + β_s + 3)
         k₋ = k - 1
         B[k, 1] = α[k₋]/(2k₋-1) - α[k+1]/(2k₋+3)
+
         if k ≤ (β_s+1)
             B[1, k] = B[k, 1] * (-1)^(0+k₋) * (1)/(2k₋+1)
         end
+
         if k > 2
             B[k-1, 2] = B[k-2, 1]/(2(k-2)-1) -
                         B[k-1, 1] -
                         B[k, 1]/(2(k-2)+3)
+
             if (k-1) ≤ (β_s+1)
                 B[2, k-1] = B[k-1, 2] * (-1)^(1+k-2) * (3/(2*(k-2)+1))  #(2(k-2)+1)#/(2n+1)
             end
+
         end
     end
+
     for n in 3:(β_s + 1)
         for k in n:(α_s + β_s + 2)
             k₋ = k - 1
@@ -58,9 +67,11 @@ function bleft_matrix(α; α_s=100, β_s=100)
             B[k, n] = -((2n₋+1)/(2k₋+3)) * B[k+1, n-1] +
                         ((2n₋+1)/(2k₋-1)) * B[k-1, n-1] +
                         B[k, n-2]
+
             if k ≤ β_s+1
                 B[n, k] = B[k, n] * (-1)^(n-1+k-1) * ((2k₋+1)/(2*(n-1)+1))
             end
+
         end
     end
 
@@ -89,24 +100,27 @@ function bright_matrix(α; α_s=100, β_s=100)
     if β_s == 0
         return α[1] + (α[2]/3)
     end
+
     B = zeros(Float64, α_s + β_s + 3, β_s+1) # 3, 1
-    #println("alpha_1 ", α[1])
-    #println("alpha_2 ", α[2]/3)
     B[1,1] = -α[1] - (α[2]/3)
     #populate n=0 column
     for k in 2:(α_s + β_s + 3) # 3
         k₋ = k - 1
         B[k, 1] = (α[k₋]/(2k₋-1) - α[k+1]/(2k₋+3))
+
         if k ≤ (β_s+1)
             B[1, k] =  B[k, 1] * (-1)^(0+k₋) * (1)/(2k₋+1)
         end
+
         if k > 2 
-            B[k-1, 2] = (B[k-2, 1]/(2(k-2)-1)) + ##
-                        B[k-1, 1] - ##
+            B[k-1, 2] = (B[k-2, 1]/(2(k-2)-1)) + ## 
+                        B[k-1, 1] -
                         B[k, 1]/(2(k-2)+3)
+
             if (k-1) ≤ (β_s+1)
                 B[2, k-1] = B[k-1, 2] * (-1)^(1+k-2) * (3/(2*(k-2)+1))  #(2(k-2)+1)#/(2n+1)
             end
+
         end
     end
 
@@ -117,9 +131,11 @@ function bright_matrix(α; α_s=100, β_s=100)
             B[k, n] = -((2n₋+1)/(2k₋+3)) * B[k+1, n-1] + ## minus at front 
                         ((2n₋+1)/(2k₋-1)) * B[k-1, n-1] +  ##
                         B[k, n-2]
+
             if k ≤ β_s+1
                 B[n, k] = B[k, n] * (-1)^(n-1+k-1) * ((2k₋+1)/(2*(n-1)+1))
             end
+
         end
     end
 
