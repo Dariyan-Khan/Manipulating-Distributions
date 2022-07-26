@@ -196,7 +196,7 @@ end
 """
 Calculates the function h as in (5 ii).
 """
-function h_12(f, g, dom_f, dom_g,  x; )
+function h_12(f, g, dom_f, dom_g,  x; α_s=100, β_s=100)
     g1 = x -> g(x)*(x in dom_g[1]..(dom_g[1] + dom_f[2] - dom_f[1]))
     g2 = x -> g(x)*(x in (dom_f[1] + dom_g[1])..(dom_g[2] - dom_f[2] + 2*dom_f[1]))
     g3 = x -> g(x)*(x in (dom_g[2] - dom_f[2] + dom_f[1])..dom_g[2])
@@ -205,16 +205,16 @@ function h_12(f, g, dom_f, dom_g,  x; )
 
     if x in (dom_f[1] + dom_g[1])..(dom_f[2] + dom_g[1])
         new_dom = [dom_f[1] + dom_g[1], dom_f[2] + dom_g[1]]
-        return legendre_same_length(f, g1, new_dom, new_dom, N=N)(x)
+        return legendre_same_length(f, g1, new_dom, new_dom, α_s=α_s, β_s=β_s)(x)
 
     elseif x in (dom_f[2] + dom_g[1])..(dom_f[1] + dom_g[2])
         new_dom = [dom_f[2] + dom_g[1], dom_f[1] + dom_g[2]]
-        return legendre_same_length(f1, g2, new_dom, new_dom, N=N)(x) + 
-               legendre_same_length(f, g3, new_dom, new_dom, N=N)(x)
+        return legendre_same_length(f1, g2, new_dom, new_dom, α_s=α_s, β_s=β_s)(x) + 
+               legendre_same_length(f, g3, new_dom, new_dom, α_s=α_s, β_s=β_s)(x)
 
     elseif x in (dom_f[1] + dom_g[2])..(dom_f[2] + dom_g[2])
         new_dom = [dom_f[1] + dom_g[2], dom_f[2] + dom_g[2]]
-        return legendre_same_length(f, g4, new_dom, new_dom, N=N)(x)
+        return legendre_same_length(f, g4, new_dom, new_dom,  α_s=α_s, β_s=β_s)(x)
 
     else
         return 0.0
@@ -222,19 +222,20 @@ function h_12(f, g, dom_f, dom_g,  x; )
     end
 end
 
+
 """
 Calculates the convolution of two functions defined on arbitrary intervals as
 in section 5.
 """
-function legendre_conv(f, g, dom_f, dom_g; N=100)
+function legendre_conv(f, g, dom_f, dom_g; α_s=α_s, β_s=β_s)
     rat = (dom_g[2] - dom_g[1])/(dom_f[2] - dom_f[1])
     #@assert rat >= 1
     if rat < 1
-        return legendre_conv(g, f, dom_g, dom_f, N=N)
+        return legendre_conv(g, f, dom_g, dom_f, α_s=α_s, β_s=β_s)
     end
     r = Int(modf(rat)[2])
     if dom_f[2] - dom_f[1] == dom_g[2] - dom_g[1]
-        return legendre_same_length(f, g, dom_f, dom_g, N=N)
+        return legendre_same_length(f, g, dom_f, dom_g, α_s=α_s, β_s=β_s)
     else
         if modf(rat)[1] == 0.0
         # d-c / b-a > 1 and integer
@@ -248,20 +249,21 @@ function legendre_conv(f, g, dom_f, dom_g; N=100)
                 funcs[j] = gⱼ
             end
             h = x -> sum(legendre_same_length(f, funcs[j], dom_f, dom_g,
-                                              N=N)(x) for j in 1:r)
+                                              α_s=α_s, β_s=β_s)(x) for j in 1:r)
             return h
         elseif 1 < rat < 2
         # d-c/b-a > 2
         # h is piecewise on 3 intervals
-            return x -> h_12(f, g, dom_f, dom_g, x, N=N)
+            return x -> h_12(f, g, dom_f, dom_g, x, α_s=α_s, β_s=β_s)
         else
         # split into sum satisfying conditions 1 and 2 
             i₁ = dom_g[1]..(dom_g[1] + (r-1)*(dom_f[2]-dom_f[1]))
             i₂ = (dom_g[1] + (r-1)*(dom_f[2]-dom_f[1]))..dom_g[2]
             g1 = x -> g(x)*(x in i₁)
             g2 = x -> g(x)*(x in i₂)
-            h1 = x -> legendre_same_length(f, g1, dom_f, dom_g, N=N)(x)
-            h2 = x -> h_12(f, g2, dom_f, dom_g, N=N, x)
+            h1 = x -> legendre_same_length(f, g1, dom_f, dom_g, α_s=α_s,
+                                           β_s=β_s)(x)
+            h2 = x -> h_12(f, g2, dom_f, dom_g, x, α_s=α_s, β_s=β_s)
             h = x -> h1(x) + h2(x)
             return h
         end  
@@ -269,11 +271,15 @@ function legendre_conv(f, g, dom_f, dom_g; N=100)
 end
 
 
-function legendre_conv_series(f, g, dom_f, dom_g; N=100)
-    h = legendre_conv(f, g, dom_f, dom_g, N=N)
+"""
+Calculates f ⋆ g supported on dom_f and dom_g respectively, expressed as a
+legendre series.
+"""
+function legendre_conv_series(f, g, dom_f, dom_g; α_s=α_s, β_s=β_s)
+    h = legendre_conv(f, g, dom_f, dom_g, α_s=α_s, β_s=β_s)
     start = dom_f[1] + dom_g[1]
     stop = dom_f[2] + dom_g[2]
-    legendreseries(h, interval=start..stop, N=N)
+    legendreseries(h, interval=start..stop, N=α_s+β_s+2)
 end
 
 
