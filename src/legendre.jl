@@ -291,30 +291,3 @@ function legendre_conv_series(f, g, dom_f, dom_g; α_s=α_s, β_s=β_s)
     stop = dom_f[2] + dom_g[2]
     legendreseries(h, interval=start..stop, N=α_s+β_s+2)
 end
-
-
-"""
-B_{k,n}^{left} from (4.5)
-"""
-function bleft(k::Int, n::Int, f, g; α_s=100, β_s=100)
-    α = legendrecoeff(f, N=α_s)
-    β = legendrecoeff(g, N=β_s)
-    bleft_inner(k, n, f, g, α, β)
-end
-
-function gammaleft(k::Int, f, g; N=100)
-    # find degree of f 
-    # take sum and use bleft 
-    β = legendrecoeff(g, N=N)
-    #println(β)
-    ret = 0 
-    for n in 0:(N-1)
-        #We need at least k+n+2 coefficients in α series for bleft to work
-        α_s = k + n + 2
-        β_s = k + n + 2
-        b = bleft(k, n, f, g, α_s=α_s, β_s=β_s)
-        #println(b)
-        ret += β[n+1] * b  # bleft(k, n, f, g, α_s=α_s, β_s=β_s)
-    end
-    return ret
-end

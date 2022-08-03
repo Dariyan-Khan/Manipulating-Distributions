@@ -2,7 +2,7 @@ using Revise, ManipulatingDistributions, PiecewiseOrthogonalPolynomials, Test
 using Distributions, LinearAlgebra
 using ClassicalOrthogonalPolynomials
 
-import ManipulatingDistributions: gammaleft, gammaright, legendreseries,
+import ManipulatingDistributions: legendreseries,
                                   gammaleft_matrix, gammaright_matrix, bleft_matrix,
                                   legendrecoeff, bright_matrix
 
