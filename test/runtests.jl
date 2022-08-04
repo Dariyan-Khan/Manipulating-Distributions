@@ -2,7 +2,7 @@ using Revise, ManipulatingDistributions, PiecewiseOrthogonalPolynomials, Test
 using Distributions, LinearAlgebra
 using ClassicalOrthogonalPolynomials
 
-import ManipulatingDistributions: legendreseries,
+import ManipulatingDistributions: gammaleft, gammaright, legendreseries,
                                   gammaleft_matrix, gammaright_matrix, bleft_matrix,
                                   legendrecoeff, bright_matrix
 
@@ -206,18 +206,27 @@ end
 end
 
 
-# @testset "legendre convolution" begin
-#     @testset "same interval" begin
-#         n = 1000
-#         h = legendre_conv(sin, cos, [-1, 1], [-1, 1], N = 3)
-#         θ = range(-1, 1, length=2n+1)[1:end-1]
-#         @test h.(θ) ≈ π*sin.(θ)
-#     end
+@testset "legendre convolution" begin
+    @testset "same int polynomial" begin
+        f = x -> x^2
+        g = x -> x^3
+        q = x -> 6x/5 + 2x^3/3
+        n = 1000
+        h = legendre_conv(f, g, [-1, 1], [-1, 1], α_s = 3, β_s = 4)
+        θ = range(-1, 1, length=2n+1)[1:end-1]
+        @test q.(θ) ≈ h.(θ)
+    end
 
-#     @testset "general interval" begin
-        
-#     end
-# end
+    @testset "same interval" begin
+        n = 1000
+        h = legendre_conv(sin, cos, [-1, 1], [-1, 1], α_s = 5, β_s = 5)
+        θ = range(-1, 1, length=2n+1)[1:end-1]
+        @test h.(θ) ≈ π*sin.(θ)
+    end
+
+    @testset "general intervals" begin
+    end
+end
 
 
 
