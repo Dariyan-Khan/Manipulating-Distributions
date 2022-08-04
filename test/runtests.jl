@@ -4,7 +4,8 @@ using ClassicalOrthogonalPolynomials
 
 import ManipulatingDistributions: gammaleft, gammaright, legendreseries,
                                   gammaleft_matrix, gammaright_matrix, bleft_matrix,
-                                  legendrecoeff, bright_matrix
+                                  legendrecoeff, bright_matrix, legendre_same_length,
+                                  conv_unit, left_conv_unit, right_conv_unit
 
 
 @testset "FFT" begin
@@ -157,6 +158,15 @@ end
     γ_exp = gammaleft_matrix(f, g; α_s=5, β_s=6)
 
     @test γ_left_true ≈ γ_exp
+
+    γ_left_true = [-0.2726756433, -0.05775281530, 0.2859244576, 0.05956759562,
+                   -0.01343585768, -0.001833723566, 0.0001882724827, 0.00001904201277,
+                     0]
+    γ_exp = gammaleft_matrix(sin, cos; α_s=3, β_s=4)
+
+    @test isapprox(γ_left_true,  γ_exp, atol=0.001)
+
+    
 end
 
 
@@ -205,23 +215,99 @@ end
     end
 end
 
+@testset "left convolution" begin
+    h_series = left_conv_unit(sin, cos, α_s=10, β_s=10)
+    h_lam = x -> h_series[x]
+    n=1000
+    θ = range(-2,0, length=2n+1)[1:end-1]
+    h_actual = x -> 0.5 * (2+x) * sin(x)
+    @test h_lam.(θ) ≈ h_actual.(θ)
+end
+
+@testset "right convolution" begin
+    h_series = right_conv_unit(sin, cos, α_s=10, β_s=10)
+    h_lam = x -> h_series[x]
+    n=1000
+    θ = range(0,2, length=2n+1)[1:end-1]
+    h_actual = x -> -0.5 * (x-2) * sin(x)
+    @test h_lam.(θ) ≈ h_actual.(θ)
+end
+
+@testset "[-1, 1] convolution" begin
+    n = 1000
+    h_lam = x -> conv_unit(x->sin(x), x->cos(x), x, α_s = 10, β_s = 11)
+    θ = range(-2, 2, length=2n+1)[1:end-1]
+
+    function h_trig(x::Real)
+        if x in -2..0
+            return 0.5 * (2+x) * sin(x)
+        elseif x in 0..2
+            return -0.5 * (x-2) * sin(x)
+        else
+            return 0
+        end
+    end
+
+    @test h_lam.(θ) ≈ h_trig.(θ)
+    
+end
+
+
+@testset "same interval convolution" begin
+    n = 1000
+    h = legendre_same_length(sin, cos, [-1, 1], [-1, 1], α_s = 10, β_s = 11)
+    θ = range(-2, 2, length=2n+1)[1:end-1]
+
+    function h_trig(x::Real)
+        if x in -2..0
+            return 0.5 * (2+x) * sin(x)
+        elseif x in 0..2
+            return -0.5 * (x-2) * sin(x)
+        else
+            return 0
+        end
+    end
+    @test h.(θ) ≈ h_trig.(θ)
+    
+end
 
 @testset "legendre convolution" begin
     @testset "same int polynomial" begin
         f = x -> x^2
         g = x -> x^3
-        q = x -> 6x/5 + 2x^3/3
+
+        function h_mono(x::Real)
+            if x in -2..0
+                return x/5 + (x^2)/2 + (x^3)/3 + x^6/60
+            elseif x in 0..2
+                return x/5 - (x^2)/2 + (x^3)/3 - x^6/60
+            else
+                return 0
+            end
+        end
+
         n = 1000
         h = legendre_conv(f, g, [-1, 1], [-1, 1], α_s = 3, β_s = 4)
         θ = range(-1, 1, length=2n+1)[1:end-1]
-        @test q.(θ) ≈ h.(θ)
+        @test h.(θ) ≈ h_mono.(θ)
     end
 
     @testset "same interval" begin
         n = 1000
-        h = legendre_conv(sin, cos, [-1, 1], [-1, 1], α_s = 5, β_s = 5)
-        θ = range(-1, 1, length=2n+1)[1:end-1]
-        @test h.(θ) ≈ π*sin.(θ)
+        h = legendre_conv(sin, cos, [-1, 1], [-1, 1], α_s = 10, β_s = 11)
+        θ = range(-2, 2, length=2n+1)[1:end-1]
+
+        function h_trig(x::Real)
+            if x in -2..0
+                return 0.5 * (2+x) * sin(x)
+            elseif x in 0..2
+                return -0.5 * (x-2) * sin(x)
+            else
+                return 0
+            end
+        end
+
+        @test h.(θ) ≈ h_trig.(θ)
     end
 
     @testset "general intervals" begin
