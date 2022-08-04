@@ -157,8 +157,10 @@ Returns the Legendre series of the left side of f ⋆ g (i.e on the interval
 [-2,0])
 """
 function left_conv_unit(f, g; α_s=100, β_s=100)
-    γₗ = gammaleft_matrix(f, g, α_s=α_s, β_s=β_s) # length is α_s + β_s + 2
-    legendre(-2..0)[:, 1:α_s + β_s + 2] * γₗ
+    γₗ = gammaleft_matrix(f, g, α_s=α_s, β_s=β_s)
+    # length is α_s + β_s + 2
+    T = legendre(-2..0)
+    return T[:, 1:α_s + β_s + 2] * γₗ
 end
 
 
@@ -168,7 +170,7 @@ Returns the Legendre series of the right side of f ⋆ g (i.e on the interval
 """
 function right_conv_unit(f, g; α_s=100, β_s=100)
     γᵣ = gammaright_matrix(f, g, α_s=α_s, β_s=β_s)
-    legendre(0..2)[:, 1:α_s + β_s + 2] * γᵣ
+    return legendre(0..2)[:, 1:α_s + β_s + 2] * γᵣ
 end
 
 """
@@ -176,6 +178,7 @@ Returns an anonymous function that combines the left and right sides of the
 convolutions.
 """
 function conv_unit(f, g, x::Real; α_s=100, β_s=100)
+    #println(x)
     if x in -2..0
         return left_conv_unit(f, g, α_s=α_s, β_s=β_s)[x]
     elseif x in 0..2
@@ -185,6 +188,9 @@ function conv_unit(f, g, x::Real; α_s=100, β_s=100)
     end
 end
 
+function inv_phi_func(dom_f)
+    return x  -> (((dom_f[2] - dom_f[1]) / 2) * (x + 1)) + dom_f[1]
+end
 
 """
 Returns f ⋆ g where f and g are supported on arbitrary intervals of the same
@@ -194,12 +200,16 @@ function legendre_same_length(f, g, dom_f, dom_g; α_s=100, β_s=100)
     @assert dom_f[2] - dom_f[1] == dom_g[2] - dom_g[1]
     L = dom_f[2] - dom_f[1]
     #Inverse of each of the phi functions in the paper
-    ϕ_f_inv = x -> (((dom_f[2] - dom_f[1]) / 2) * (x + 1)) + dom_f[1]
-    ϕ_g_inv = x -> (((dom_g[2] - dom_g[1]) / 2) * (x + 1)) + dom_g[1]
+    # ϕ_f_inv = x -> (((dom_f[2] - dom_f[1]) / 2) * (x + 1)) + dom_f[1]
+    # ϕ_g_inv = x -> (((dom_g[2] - dom_g[1]) / 2) * (x + 1)) + dom_g[1]
+    ϕ_f_inv = inv_phi_func(dom_f)
+    ϕ_g_inv = inv_phi_func(dom_g)
     fᵣ = x -> f(ϕ_f_inv(x))
     gᵣ = x -> g(ϕ_g_inv(x))
+    dom_full = [dom_f[1] + dom_g[1], dom_f[2] + dom_g[2]]
+    ϕ_map = x -> (2*(x-dom_full[1])/(dom_full[2] - dom_full[1])) - 1
     # return (L/2) * left_conv_unit(fᵣ, gᵣ, N=N), (L/2) * right_conv_unit(fᵣ, gᵣ, N=N)
-    return x -> (L/2) * conv_unit(fᵣ, gᵣ, x, α_s=α_s, β_s=β_s)
+    return x -> (L/2) * conv_unit(fᵣ, gᵣ, 2 * ϕ_map(x), α_s=α_s, β_s=β_s)
 end
 
 
@@ -291,3 +301,20 @@ function legendre_conv_series(f, g, dom_f, dom_g; α_s=α_s, β_s=β_s)
     stop = dom_f[2] + dom_g[2]
     legendreseries(h, interval=start..stop, N=α_s+β_s+2)
 end
+
+#left_conv_unit(sin, cos; α_s=100, β_s=100)
+
+
+# n = 1000
+# h= left_conv_unit(x->sin(x), x->cos(x), α_s = 3, β_s = 2)
+# #θ = range(-1, 0, length=2n+1)[1:end-1]
+# h[-1]
+
+#≈ π*sin.(θ)
+# T = legendre(-2..0)
+# h = T[:,1:3]*[1,1,1]
+# h[-1]
+
+h =legendre_conv(sin, cos, [-1, 1], [-1, 1], α_s = 10, β_s = 11)
+
+h.(range(-2, 2, length=100))[50]

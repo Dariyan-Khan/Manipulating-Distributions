@@ -5,7 +5,8 @@ using ClassicalOrthogonalPolynomials
 import ManipulatingDistributions: gammaleft, gammaright, legendreseries,
                                   gammaleft_matrix, gammaright_matrix, bleft_matrix,
                                   legendrecoeff, bright_matrix, legendre_same_length,
-                                  conv_unit, left_conv_unit, right_conv_unit
+                                  conv_unit, left_conv_unit, right_conv_unit,
+                                  legendre_same_length
 
 
 @testset "FFT" begin
@@ -309,6 +310,27 @@ end
 
         @test h.(θ) ≈ h_trig.(θ)
     end
+
+    @testset "Same interval length" begin
+        n = 1000
+        f = x -> x^3 + 1
+        g = x-> x^4 -2
+        h = legendre_same_length(f, g, [1,6], [3, 8]; α_s=100, β_s=100)
+        
+        function h_poly1(x::Real)
+            if x in 4..9
+                return 3696/5 - 2054*x + (4941*x^2)/2 - 1677*x^3 + (2821*x^4)/4 - (944*x^5)/5 + (63*x^6)/2 - 3*x^7 + (x^8)/8
+            elseif x in 9..14
+                return -(9388596/5) + 2092034*x - 916288*x^2 + 229232*x^3 - (71663*x^4)/2 + (17919*x^5)/5 - 224*x^6 + 8*x^7 - (x^8)/8
+            else
+                return 0
+            end
+        end
+
+        θ = range(4, 14, length=2n+1)[1:end-1]
+        @test h.(θ) ≈ h_poly1.(θ)
+    end
+
 
     @testset "general intervals" begin
     end
