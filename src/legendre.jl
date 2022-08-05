@@ -188,8 +188,8 @@ function conv_unit(f, g, x::Real; α_s=100, β_s=100)
     end
 end
 
-function inv_phi_func(dom_f)
-    return x  -> (((dom_f[2] - dom_f[1]) / 2) * (x + 1)) + dom_f[1]
+function inv_phi_func(dom)
+    return x  -> (((dom[2] - dom[1]) / 2) * (x + 1)) + dom[1]
 end
 
 """
@@ -216,25 +216,27 @@ end
 """
 Calculates the function h as in (5 ii).
 """
-function h_12(f, g, dom_f, dom_g,  x; α_s=100, β_s=100)
-    g1 = x -> g(x)*(x in dom_g[1]..(dom_g[1] + dom_f[2] - dom_f[1]))
-    g2 = x -> g(x)*(x in (dom_f[1] + dom_g[1])..(dom_g[2] - dom_f[2] + 2*dom_f[1]))
-    g3 = x -> g(x)*(x in (dom_g[2] - dom_f[2] + dom_f[1])..dom_g[2])
-    g4 = x -> g(x)*(x in (dom_g[2] - dom_f[2] + dom_f[1])..dom_g[2])
-    f1 = x -> f(x)*(x in (2*dom_f[2] + dom_g[1] - dom_g[2] - dom_f[1])..dom_f[2])
+function h_12(f, g, dom_f, dom_g,  x; α_s=100, β_s=100)     #[2, 5], [3, 8]
+    a,b = dom_f
+    c,d = dom_g
+    g1 = x -> g(x)*(x in c ..(c + b - a))
+    g2 = x -> g(x)*(x in (a + c) .. (d - b + 2a))
+    g3 = x -> g(x)*(x in (d - b + a) .. d)
+    f1 = x -> f(x)*(x in (2b + c - d - a) .. b)
 
-    if x in (dom_f[1] + dom_g[1])..(dom_f[2] + dom_g[1])
-        new_dom = [dom_f[1] + dom_g[1], dom_f[2] + dom_g[1]]
-        return legendre_same_length(f, g1, new_dom, new_dom, α_s=α_s, β_s=β_s)(x)
+    if x in (a + c) .. (b + c)
+        #new_dom = [dom_f[1] + dom_g[1], dom_f[2] + dom_g[1]]
+        return legendre_same_length(f, g1, dom_f, [c, c + b - a], α_s=α_s, β_s=β_s)(x)
 
-    elseif x in (dom_f[2] + dom_g[1])..(dom_f[1] + dom_g[2])
-        new_dom = [dom_f[2] + dom_g[1], dom_f[1] + dom_g[2]]
-        return legendre_same_length(f1, g2, new_dom, new_dom, α_s=α_s, β_s=β_s)(x) + 
-               legendre_same_length(f, g3, new_dom, new_dom, α_s=α_s, β_s=β_s)(x)
+    elseif x in (b + c) .. (a + d)
+        # new_dom = [dom_f[2] + dom_g[1], dom_f[1] + dom_g[2]]
+        p = legendre_same_length(f1, g2, [(2*b) + c - d - a, b], [a+c, d - b + 2a], α_s=α_s, β_s=β_s)(x)
+        q = legendre_same_length(f, g3, dom_f, [d-b+a, d], α_s=α_s, β_s=β_s)(x)
+        return  p + q
 
-    elseif x in (dom_f[1] + dom_g[2])..(dom_f[2] + dom_g[2])
-        new_dom = [dom_f[1] + dom_g[2], dom_f[2] + dom_g[2]]
-        return legendre_same_length(f, g4, new_dom, new_dom,  α_s=α_s, β_s=β_s)(x)
+    elseif x in (a + d) ..(b + d)
+        # new_dom = [dom_f[1] + dom_g[2], dom_f[2] + dom_g[2]]
+        return legendre_same_length(f, g3, dom_f, [d-b+a, d],  α_s=α_s, β_s=β_s)(x)
 
     else
         return 0.0
@@ -251,7 +253,7 @@ function legendre_conv(f, g, dom_f, dom_g; α_s=α_s, β_s=β_s)
     rat = (dom_g[2] - dom_g[1])/(dom_f[2] - dom_f[1])
     #@assert rat >= 1
     if rat < 1
-        return legendre_conv(g, f, dom_g, dom_f, α_s=α_s, β_s=β_s)
+        return legendre_conv(g, f, dom_g, dom_f, α_s=β_s, β_s=α_s)
     end
     r = Int(modf(rat)[2])
     if dom_f[2] - dom_f[1] == dom_g[2] - dom_g[1]
@@ -261,14 +263,18 @@ function legendre_conv(f, g, dom_f, dom_g; α_s=α_s, β_s=β_s)
         # d-c / b-a > 1 and integer
         # partition g into (d-c)/(b-a) subdomains and add
             funcs = Array{Function}(undef, r)
+            firsts = zeros(r)
+            lasts = zeros(r)
             for j in 1:r
                 first = dom_g[1] + (j-1)*(dom_f[2] - dom_f[1])
                 last = dom_g[1] + j*(dom_f[2]-dom_f[1])
+                firsts[j] = first
+                lasts[j] = last 
                 dⱼ = first..last
                 gⱼ = x -> g(x)*(x in dⱼ)
                 funcs[j] = gⱼ
             end
-            h = x -> sum(legendre_same_length(f, funcs[j], dom_f, dom_g,
+            h = x -> sum(legendre_same_length(f, funcs[j], dom_f, [firsts[j], lasts[j]],
                                               α_s=α_s, β_s=β_s)(x) for j in 1:r)
             return h
         elseif 1 < rat < 2
@@ -314,7 +320,16 @@ end
 # T = legendre(-2..0)
 # h = T[:,1:3]*[1,1,1]
 # h[-1]
+# n = 1000
+# f = x -> x^3 - 2x
+# g = x-> x^4 - 7
+# h = legendre_conv(f, g, [2, 5], [3, 8]; α_s=4, β_s=5)
 
-h =legendre_conv(sin, cos, [-1, 1], [-1, 1], α_s = 10, β_s = 11)
+# h(10)
 
-h.(range(-2, 2, length=100))[50]
+n = 1000
+f = x -> x^2
+g = x-> x
+h = legendre_conv(f, g, [2, 4], [1, 4]; α_s=3, β_s=5)
+
+println(h(5.05))
