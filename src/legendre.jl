@@ -214,7 +214,8 @@ end
 
 
 """
-Calculates the function h as in (5 ii).
+Calculates the convolution (h as in (5 ii))
+when the supports satisfy 1 < (d-c)/(b-a) < 2
 """
 function h_12(f, g, dom_f, dom_g,  x; α_s=100, β_s=100)     #[2, 5], [3, 8]
     a,b = dom_f
@@ -230,9 +231,9 @@ function h_12(f, g, dom_f, dom_g,  x; α_s=100, β_s=100)     #[2, 5], [3, 8]
 
     elseif x in (b + c) .. (a + d)
         # new_dom = [dom_f[2] + dom_g[1], dom_f[1] + dom_g[2]]
-        p = legendre_same_length(f1, g2, [(2*b) + c - d - a, b], [a+c, d - b + 2a], α_s=α_s, β_s=β_s)(x)
-        q = legendre_same_length(f, g3, dom_f, [d-b+a, d], α_s=α_s, β_s=β_s)(x)
-        return  p + q
+        p = legendre_same_length(f1, g2, [(2*b) + c - d - a, b], [a+c, d - b + 2a], α_s=α_s, β_s=β_s)
+        q = legendre_same_length(f, g3, dom_f, [d-b+a, d], α_s=α_s, β_s=β_s)
+        return  p(x) + q(x)
 
     elseif x in (a + d) ..(b + d)
         # new_dom = [dom_f[1] + dom_g[2], dom_f[2] + dom_g[2]]
