@@ -1,5 +1,5 @@
 module ManipulatingDistributions
-using LinearAlgebra, ClassicalOrthogonalPolynomials, Distributions
+using LinearAlgebra, ClassicalOrthogonalPolynomials, Distributions, IntervalSets
 export fft_conv, legendre_conv
 
 

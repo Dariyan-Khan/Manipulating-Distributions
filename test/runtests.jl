@@ -57,30 +57,6 @@ end
     #@test legendreseries(f).[x]    
 end
 
-@testset "gamma left" begin
-    # f₁ = x -> x^2
-    # g₁ = x -> x + 1
-    # γ_left_true = [8/15, 2/9, 2/105, 0, 4/945]
-    # g_lam = k -> gammaleft(k, f, g, N=10)
-    # γ_exp = g_lam.(0:4)
-    # @test γ_left_true ≈ γ_exp
-    @test gammaleft(0, x->1, x->1, N=10) ≈ 1
-    f = x -> x^2
-    g = x -> x + 1
-    γ_left_true = [4/15, 6/18, 10/210, 0, 36/1890]
-    g_lam = k -> gammaleft(k, f, g, N=10)
-    γ_exp = g_lam.(0:4)
-    @test γ_left_true ≈ γ_exp
-
-    f = x -> x^4 + 2x + 5
-    g = x -> x^5 + 3x^4 + x^2 +5x + 7
-    γ_left_true = [52116/1925, 9674/275, 157666/15015, 525544/225225, 
-                        23396/75075, 1192/2925, 3776/98175, 3616/765765,
-                        -(64/611325), -(128/3828825), 64/14549535]
-    g_lam = k -> gammaleft(k, f, g, N=20)
-    γ_exp = g_lam.(0:10)
-    @test γ_left_true ≈ γ_exp
-end
 
 @testset "Bleft matrix" begin
     f = x -> x^4 + 2x + 5
@@ -256,7 +232,7 @@ end
 
 @testset "same interval convolution" begin
     n = 1000
-    h = legendre_same_length(sin, cos, [-1, 1], [-1, 1], α_s = 10, β_s = 11)
+    h = legendre_same_length(sin, cos, -1..1, -1..1, α_s = 10, β_s = 11)
     θ = range(-2, 2, length=2n+1)[1:end-1]
 
     function h_trig(x::Real)
@@ -288,14 +264,14 @@ end
         end
 
         n = 1000
-        h = legendre_conv(f, g, [-1, 1], [-1, 1], α_s = 3, β_s = 4)
+        h = legendre_conv(f, g, -1..1, -1..1, α_s = 3, β_s = 4)
         θ = range(-1, 1, length=2n+1)[1:end-1]
         @test h.(θ) ≈ h_mono.(θ)
     end
 
     @testset "same interval" begin
         n = 1000
-        h = legendre_conv(sin, cos, [-1, 1], [-1, 1], α_s = 10, β_s = 11)
+        h = legendre_conv(sin, cos, -1..1, -1..1, α_s = 10, β_s = 11)
         θ = range(-2, 2, length=2n+1)[1:end-1]
 
         function h_trig(x::Real)
@@ -324,7 +300,7 @@ end
         n = 1000
         f = x -> x^3 + 1
         g = x-> x^4 -2
-        h = legendre_same_length(f, g, [1,6], [3, 8]; α_s=4, β_s=5)
+        h = legendre_same_length(f, g, 1..6, 3..8; α_s=4, β_s=5)
         
         function h_poly1(x::Real)
             if x in 4..9
@@ -346,7 +322,7 @@ end
             n = 1000
             f = x -> x^3 + x^2
             g = x-> x^4
-            h = legendre_conv(f, g, [4, 10], [7, 25]; α_s=4, β_s=5)
+            h = legendre_conv(f, g, 4..10, 7..25; α_s=4, β_s=5)
 
             function h_poly2(x::Real)
                 if x in 11..17
@@ -397,7 +373,7 @@ end
                 0.0
             end
 
-            h̃ = legendre_conv(f, g, [a,b], [c,d], α_s=3, β_s=2)
+            h̃ = legendre_conv(f, g, a..b, c..d, α_s=3, β_s=2)
 
             @test h̃(2.5) ≈ h(2.5)
             @test h̃(3.5) ≈ h(3.5)
@@ -410,7 +386,7 @@ end
             n = 1000
             f = x -> x^2
             g = x-> x
-            h = legendre_conv(f, g, [2, 4], [1, 4], α_s=3, β_s=2)
+            h = legendre_conv(f, g, 2..4, 1..4, α_s=3, β_s=2)
 
             function h_poly3(x::Real)
                 if x in 3..5
@@ -442,7 +418,7 @@ end
 
 @testset "Legendre" begin
     n = 10
-    h = legendre_conv(one, one, [0,1], [0,1]; N=100)
+    h = legendre_conv(one, one, 0..1, 0..1, N=100)
 
     @test_broken iszero(h(-0.5))
     @test_broken h(0.1) ≈ 0.1 # x

@@ -189,7 +189,7 @@ function conv_unit(f, g, x::Real; α_s=100, β_s=100)
 end
 
 function inv_phi_func(dom)
-    return x  -> (((dom[2] - dom[1]) / 2) * (x + 1)) + dom[1]
+    return x  -> (((width(dom)) / 2) * (x + 1)) + leftendpoint(dom)
 end
 
 """
@@ -197,19 +197,18 @@ Returns f ⋆ g where f and g are supported on arbitrary intervals of the same
 length. (4.9)
 """
 function legendre_same_length(f, g, dom_f, dom_g; α_s=100, β_s=100)
-    @assert dom_f[2] - dom_f[1] == dom_g[2] - dom_g[1]
-    L = dom_f[2] - dom_f[1]
+    @assert width(dom_f) == width(dom_g)
     #Inverse of each of the phi functions in the paper
-    # ϕ_f_inv = x -> (((dom_f[2] - dom_f[1]) / 2) * (x + 1)) + dom_f[1]
-    # ϕ_g_inv = x -> (((dom_g[2] - dom_g[1]) / 2) * (x + 1)) + dom_g[1]
+    # ϕ_f_inv = x -> (((rightendpoint(dom_f) - leftendpoint(dom_f)) / 2) * (x + 1)) + leftendpoint(dom_f)
+    # ϕ_g_inv = x -> (((rightendpoint(dom_g) - leftendpoint(dom_g)) / 2) * (x + 1)) + leftendpoint(dom_g)
     ϕ_f_inv = inv_phi_func(dom_f)
     ϕ_g_inv = inv_phi_func(dom_g)
     fᵣ = x -> f(ϕ_f_inv(x))
     gᵣ = x -> g(ϕ_g_inv(x))
-    dom_full = [dom_f[1] + dom_g[1], dom_f[2] + dom_g[2]]
-    ϕ_map = x -> (2*(x-dom_full[1])/(dom_full[2] - dom_full[1])) - 1
+    dom_full = (leftendpoint(dom_f) + leftendpoint(dom_g)) .. (rightendpoint(dom_f) + rightendpoint(dom_g))
+    ϕ_map = x -> (2*(x-leftendpoint(dom_full))/(width(dom_full))) - 1
     # return (L/2) * left_conv_unit(fᵣ, gᵣ, N=N), (L/2) * right_conv_unit(fᵣ, gᵣ, N=N)
-    return x -> (L/2) * conv_unit(fᵣ, gᵣ, 2 * ϕ_map(x), α_s=α_s, β_s=β_s)
+    return x -> 0.5 * width(dom_f) * conv_unit(fᵣ, gᵣ, 2 * ϕ_map(x), α_s=α_s, β_s=β_s)
 end
 
 
@@ -218,26 +217,26 @@ Calculates the convolution (h as in (5 ii))
 when the supports satisfy 1 < (d-c)/(b-a) < 2
 """
 function h_12(f, g, dom_f, dom_g,  x; α_s=100, β_s=100)     #[2, 5], [3, 8]
-    a,b = dom_f
-    c,d = dom_g
+    a,b = endpoints(dom_f)
+    c,d = endpoints(dom_g)
     g1 = x -> g(x)*(x in c ..(c + b - a))
     g2 = x -> g(x)*(x in (a + c) .. (d - b + 2a))
     g3 = x -> g(x)*(x in (d - b + a) .. d)
     f1 = x -> f(x)*(x in (2b + c - d - a) .. b)
 
     if x in (a + c) .. (b + c)
-        #new_dom = [dom_f[1] + dom_g[1], dom_f[2] + dom_g[1]]
-        return legendre_same_length(f, g1, dom_f, [c, c + b - a], α_s=α_s, β_s=β_s)(x)
+        #new_dom = [leftendpoint(dom_f) + leftendpoint(dom_g), rightendpoint(dom_f) + leftendpoint(dom_g)]
+        return legendre_same_length(f, g1, dom_f, c..(c + b - a), α_s=α_s, β_s=β_s)(x)
 
     elseif x in (b + c) .. (a + d)
-        # new_dom = [dom_f[2] + dom_g[1], dom_f[1] + dom_g[2]]
-        p = legendre_same_length(f1, g2, [(2*b) + c - d - a, b], [a+c, d - b + 2a], α_s=α_s, β_s=β_s)
-        q = legendre_same_length(f, g3, dom_f, [d-b+a, d], α_s=α_s, β_s=β_s)
+        # new_dom = [rightendpoint(dom_f) + leftendpoint(dom_g), leftendpoint(dom_f) + rightendpoint(dom_g)]
+        p = legendre_same_length(f1, g2, ((2*b) + c - d - a) .. b, (a+c) .. (d - b + 2a), α_s=α_s, β_s=β_s)
+        q = legendre_same_length(f, g3, dom_f, (d-b+a)..d, α_s=α_s, β_s=β_s)
         return  p(x) + q(x)
 
     elseif x in (a + d) ..(b + d)
-        # new_dom = [dom_f[1] + dom_g[2], dom_f[2] + dom_g[2]]
-        return legendre_same_length(f, g3, dom_f, [d-b+a, d],  α_s=α_s, β_s=β_s)(x)
+        # new_dom = [leftendpoint(dom_f) + rightendpoint(dom_g), rightendpoint(dom_f) + rightendpoint(dom_g)]
+        return legendre_same_length(f, g3, dom_f, (d-b+a)..d,  α_s=α_s, β_s=β_s)(x)
 
     else
         return 0.0
@@ -251,13 +250,13 @@ Calculates the convolution of two functions defined on arbitrary intervals as
 in section 5.
 """
 function legendre_conv(f, g, dom_f, dom_g; α_s=α_s, β_s=β_s)
-    rat = (dom_g[2] - dom_g[1])/(dom_f[2] - dom_f[1])
+    rat = width(dom_g)/width(dom_f)
     #@assert rat >= 1
     if rat < 1
         return legendre_conv(g, f, dom_g, dom_f, α_s=β_s, β_s=α_s)
     end
     r = Int(modf(rat)[2])
-    if dom_f[2] - dom_f[1] == dom_g[2] - dom_g[1]
+    if width(dom_f) == width(dom_g)
         return legendre_same_length(f, g, dom_f, dom_g, α_s=α_s, β_s=β_s)
     else
         if modf(rat)[1] == 0.0
@@ -267,15 +266,15 @@ function legendre_conv(f, g, dom_f, dom_g; α_s=α_s, β_s=β_s)
             firsts = zeros(r)
             lasts = zeros(r)
             for j in 1:r
-                first = dom_g[1] + (j-1)*(dom_f[2] - dom_f[1])
-                last = dom_g[1] + j*(dom_f[2]-dom_f[1])
+                first = leftendpoint(dom_g) + (j-1)*(width(dom_f))
+                last = leftendpoint(dom_g) + j*(width(dom_f))
                 firsts[j] = first
                 lasts[j] = last 
                 dⱼ = first..last
                 gⱼ = x -> g(x)*(x in dⱼ)
                 funcs[j] = gⱼ
             end
-            h = x -> sum(legendre_same_length(f, funcs[j], dom_f, [firsts[j], lasts[j]],
+            h = x -> sum(legendre_same_length(f, funcs[j], dom_f, firsts[j]..lasts[j],
                                               α_s=α_s, β_s=β_s)(x) for j in 1:r)
             return h
         elseif 1 < rat < 2
@@ -284,8 +283,8 @@ function legendre_conv(f, g, dom_f, dom_g; α_s=α_s, β_s=β_s)
             return x -> h_12(f, g, dom_f, dom_g, x, α_s=α_s, β_s=β_s)
         else
         # split into sum satisfying conditions 1 and 2 
-            i₁ = dom_g[1]..(dom_g[1] + (r-1)*(dom_f[2]-dom_f[1]))
-            i₂ = (dom_g[1] + (r-1)*(dom_f[2]-dom_f[1]))..dom_g[2]
+            i₁ = leftendpoint(dom_g)..(leftendpoint(dom_g) + (r-1)*(width(dom_f)))
+            i₂ = (leftendpoint(dom_g) + (r-1)*(width(dom_f)))..rightendpoint(dom_g)
             g1 = x -> g(x)*(x in i₁)
             g2 = x -> g(x)*(x in i₂)
             h1 = x -> legendre_same_length(f, g1, dom_f, dom_g, α_s=α_s,
@@ -304,8 +303,8 @@ legendre series.
 """
 function legendre_conv_series(f, g, dom_f, dom_g; α_s=α_s, β_s=β_s)
     h = legendre_conv(f, g, dom_f, dom_g, α_s=α_s, β_s=β_s)
-    start = dom_f[1] + dom_g[1]
-    stop = dom_f[2] + dom_g[2]
+    start = leftendpoint(dom_f) + leftendpoint(dom_g)
+    stop = rightendpoint(dom_f) + rightendpoint(dom_g)
     legendreseries(h, interval=start..stop, N=α_s+β_s+2)
 end
 
@@ -327,10 +326,3 @@ end
 # h = legendre_conv(f, g, [2, 5], [3, 8]; α_s=4, β_s=5)
 
 # h(10)
-
-n = 1000
-f = x -> x^2
-g = x-> x
-h = legendre_conv(f, g, [2, 4], [1, 4]; α_s=3, β_s=5)
-
-println(h(5.05))
